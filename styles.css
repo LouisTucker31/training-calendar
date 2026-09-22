@@ -12,7 +12,7 @@
   /* Roughly the today-pill's own height plus a gap above it, so the page's
      bottom padding (below) can reserve room for it without hardcoding the
      number twice. */
-  --today-pill-clearance: 100px;
+  --today-pill-clearance: 88px;
 }
 
 * { box-sizing: border-box; }
