@@ -1,9 +1,16 @@
 :root {
   --bg: #ffffff;
   --ink: #1c1e21;
+  /* Same colour as --ink, as separate R,G,B channels so it can be used
+     with rgba() at varying opacity (backdrops, shadows) without repeating
+     the literal rgb(28, 30, 33) at every point of use. */
+  --ink-rgb: 28, 30, 33;
   --ink-soft: #5b5f66;
   --line: #c7cad0;
   --line-strong: #b9bdc4;
+  /* Same colour as --line-strong, split into R,G,B channels - see the
+     matching comment on --ink-rgb above. */
+  --line-strong-rgb: 185, 189, 196;
   --today-ring: #2f5d8a;
   /* Rendered height of .range-header - used below to size .month so
      ~3.5 months fit per mobile screen. Named so the relationship is
@@ -308,7 +315,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(28, 30, 33, 0.4);
+  background: rgba(var(--ink-rgb), 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -480,7 +487,7 @@ body {
 .event-list-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(28, 30, 33, 0.4);
+  background: rgba(var(--ink-rgb), 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -657,8 +664,8 @@ body {
   /* Plain fallback (no blur) for browsers without backdrop-filter, so
      text stays readable even if the glass effect doesn't render. */
   background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(185, 189, 196, 0.5); /* --line-strong at low opacity */
-  box-shadow: 0 10px 30px rgba(28, 30, 33, 0.12);
+  border: 1px solid rgba(var(--line-strong-rgb), 0.5);
+  box-shadow: 0 10px 30px rgba(var(--ink-rgb), 0.12);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
@@ -668,10 +675,10 @@ body {
     -webkit-backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow:
-      0 10px 30px rgba(28, 30, 33, 0.14),
-      0 1px 1px rgba(28, 30, 33, 0.06),
+      0 10px 30px rgba(var(--ink-rgb), 0.14),
+      0 1px 1px rgba(var(--ink-rgb), 0.06),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 0 0 1px rgba(185, 189, 196, 0.18);
+      inset 0 0 0 1px rgba(var(--line-strong-rgb), 0.18);
   }
 }
 
@@ -683,12 +690,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.today-pill-date {
-  flex: none;
-  color: var(--ink-soft);
-  font-weight: 400;
 }
 
 /* Tap-through highlight: a brief "look here" pulse on today's cell,
