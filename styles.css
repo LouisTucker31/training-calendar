@@ -335,9 +335,19 @@ body {
   border: 1px solid var(--line-strong);
   width: 100%;
   max-width: 380px;
-  /* No max-height/overflow of its own - see the matching comment on
-     .event-list-panel for why: scrolling the overlay instead keeps both
-     ends of taller-than-viewport content reachable on mobile. */
+  /* max-height caps the card itself and scrolls its own content once it
+     grows past that, rather than growing unbounded and relying on the
+     overlay to scroll - so the card shrinks to fit shorter content and
+     only becomes internally scrollable once it's genuinely too tall.
+     100dvh (dynamic viewport height) rather than 100vh specifically
+     because 100vh doesn't account for a mobile browser's address bar,
+     which is what caused this to get clipped top/bottom before; 100dvh
+     tracks the actual visible area. The vh fallback below only matters
+     on the small set of older browsers without dvh support. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   margin: auto;
   padding: 24px;
   position: relative;
@@ -508,13 +518,14 @@ body {
   width: 100%;
   max-width: 420px;
   animation: modal-card-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
-  /* No max-height/overflow of its own - with an expanded row this panel
-     can end up taller than the viewport, especially on mobile where
-     100vh doesn't reliably match the visible area once the address bar
-     is accounted for. Letting the panel grow to its natural height and
-     scrolling the overlay itself (above) instead keeps both the top and
-     bottom of the content reachable, rather than clipping whichever end
-     sticks out past a fixed max-height. */
+  /* Capped and internally scrollable, same as .modal-card - see the
+     comment there for why 100dvh specifically. Shrinks to fit when every
+     row is collapsed, and only scrolls internally once expanding a row
+     pushes it past the cap. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   margin: auto;
   padding: 24px;
   position: relative;

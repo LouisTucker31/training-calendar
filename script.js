@@ -820,7 +820,9 @@ async function init() {
 
   renderCalendar();
   updateTodayPill();
-  scrollToCurrentMonth(false);
+  // Page loads showing the top of the calendar (July 2026), not
+  // pre-scrolled to the current month - the today-pill's own tap-through
+  // (scrollToCurrentMonth(true), unchanged) is still how you jump to today.
 }
 
 init();
