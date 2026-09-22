@@ -297,9 +297,6 @@ const WORKOUTS = {
   "2026-10-06": { week: 1, phase: "Build", sessions: [
     { day: "Tue", discipline: "Run", session: "Quality Run", duration: "40 min", details: "10 min WU; 5 x 3 min Threshold; 2:30 jog between reps; 5 min CD", rpe: "RPE 7/10" },
   ]},
-  "2026-10-08": { week: 1, phase: "Build", sessions: [
-    { day: "Thu", discipline: "Swim", session: "Maintenance Swim", duration: "1,200 m", details: "100 m WU; 5 x 200 m Endurance (30 sec rest); 100 m CD", rpe: "RPE 5-6/10" },
-  ]},
   "2026-10-10": { week: 1, phase: "Build", sessions: [
     { day: "Sat", discipline: "Run", session: "Long Run", duration: "12 km", details: "Endurance / Long; continuous easy running", rpe: "RPE 4-5/10" },
   ]},
@@ -318,9 +315,6 @@ const WORKOUTS = {
   // --- Week 3 (19-25 Oct 26) - Deload ---
   "2026-10-20": { week: 3, phase: "Deload", sessions: [
     { day: "Tue", discipline: "Run", session: "Easy Run", duration: "25 min", details: "Easy / Recovery; genuinely light", rpe: "RPE 3/10" },
-  ]},
-  "2026-10-22": { week: 3, phase: "Deload", sessions: [
-    { day: "Thu", discipline: "Swim", session: "Maintenance Swim", duration: "1,200 m", details: "100 m WU; 5 x 200 m Endurance (30 sec rest); 100 m CD", rpe: "RPE 5-6/10" },
   ]},
   "2026-10-24": { week: 3, phase: "Deload", sessions: [
     { day: "Sat", discipline: "Run", session: "Long Run", duration: "9 km", details: "Endurance / Long; reduced-volume long run", rpe: "RPE 3-4/10" },
@@ -341,9 +335,6 @@ const WORKOUTS = {
   "2026-11-03": { week: 5, phase: "Peak", sessions: [
     { day: "Tue", discipline: "Run", session: "HM-Specific Run", duration: "40 min", details: "10 min WU; 20 min continuous at 70.3 Race Pace; 10 min CD", rpe: "Controlled" },
   ]},
-  "2026-11-05": { week: 5, phase: "Peak", sessions: [
-    { day: "Thu", discipline: "Swim", session: "Maintenance Swim", duration: "1,200 m", details: "100 m WU; 5 x 200 m Endurance (30 sec rest); 100 m CD", rpe: "RPE 5-6/10" },
-  ]},
   "2026-11-07": { week: 5, phase: "Peak", sessions: [
     { day: "Sat", discipline: "Run", session: "Long Run + HM Finish", duration: "17 km", details: "Endurance / Long; final 20-30 min at 70.3 Race Pace", rpe: "RPE 4-6/10" },
   ]},
@@ -352,8 +343,5 @@ const WORKOUTS = {
   // is the Bristol Half event above, not repeated here. ---
   "2026-11-10": { week: 6, phase: "Taper / Race", sessions: [
     { day: "Tue", discipline: "Run", session: "Shakeout Run", duration: "20 min total", details: "Easy / Recovery; 4 x 20 sec relaxed strides embedded in final 10 min", rpe: "Easy" },
-  ]},
-  "2026-11-12": { week: 6, phase: "Taper / Race", sessions: [
-    { day: "Thu", discipline: "Swim", session: "Optional Recovery Swim", duration: "800-1,000 m", details: "200 m WU; 400-600 m Easy / Recovery; 200 m CD; skip if fatigued", rpe: "RPE 2-3/10" },
   ]},
 };
