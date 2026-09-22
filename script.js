@@ -429,27 +429,9 @@ document.body.appendChild(eventListOverlay);
 const eventListTrigger = document.getElementById("event-list-trigger");
 let eventListLastFocused = null;
 
-// Anchors the panel under the trigger button using its live position,
-// rather than a fixed pixel offset, so it stays lined up even though the
-// header's own padding changes at the 900px breakpoint. Skipped on mobile
-// (640px and under), where the panel is a full-width fixed sheet instead
-// and the mobile CSS's own inset:0 takes over positioning - an inline
-// top/right here would otherwise outrank that rule's specificity.
-function positionEventListPanel() {
-  if (window.matchMedia("(max-width: 640px)").matches) {
-    eventListPanel.style.top = "";
-    eventListPanel.style.right = "";
-    return;
-  }
-  const rect = eventListTrigger.getBoundingClientRect();
-  eventListPanel.style.top = `${rect.bottom + 8}px`;
-  eventListPanel.style.right = `${window.innerWidth - rect.right}px`;
-}
-
 function openEventList() {
   eventListBody.innerHTML = renderEventListPanel();
   eventListOverlay.hidden = false;
-  positionEventListPanel();
   eventListTrigger.setAttribute("aria-expanded", "true");
   eventListLastFocused = document.activeElement;
   eventListPanel.focus();
@@ -477,9 +459,6 @@ eventListBody.addEventListener("click", e => {
   const expanded = head.getAttribute("aria-expanded") === "true";
   head.setAttribute("aria-expanded", String(!expanded));
   if (body) body.hidden = expanded;
-});
-window.addEventListener("resize", () => {
-  if (!eventListOverlay.hidden) positionEventListPanel();
 });
 document.addEventListener("keydown", e => {
   if (eventListOverlay.hidden) return;
