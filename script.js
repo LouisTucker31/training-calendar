@@ -485,6 +485,88 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeEventList();
 });
 
+// Floating "today" pill: persistent summary of today's workout, plus the
+// tap-through that scrolls back to the current month. Reads only from
+// WORKOUTS/TRAINING_BLOCKS (already loaded by init() before this is ever
+// called) - no new data model, no changes to day-tile rendering or the
+// logged-dot.
+function todayPillContent() {
+  const workout = WORKOUTS[todayIso];
+  const block = trainingBlockFor(todayIso);
+
+  if (!block) {
+    // Outside any training block entirely (before/after the plan's
+    // range) - nothing sensible to show.
+    return null;
+  }
+
+  if (!workout) {
+    // Same "no WORKOUTS entry within a block" convention the day-detail
+    // modal already uses to mean Rest Day (see renderTrainingModal).
+    return { label: "Rest Day" };
+  }
+
+  if (workout.sessions.length > 1) {
+    // Brick day - name it from the disciplines involved rather than
+    // trying to cram multiple durations onto the pill; the day popup
+    // (via the pill's tap-through, or tapping the cell directly) has the
+    // full breakdown.
+    const disciplines = workout.sessions.map(s => s.discipline).filter(Boolean);
+    const label = disciplines.length === 2
+      ? `${disciplines[0]} to ${disciplines[1].toLowerCase()} brick`
+      : "Brick session";
+    return { label };
+  }
+
+  const s = workout.sessions[0];
+  const parts = [s.session, s.duration].filter(Boolean);
+  return { label: parts.join(" - ") };
+}
+
+function updateTodayPill() {
+  const content = todayPillContent();
+  if (!content) {
+    todayPill.hidden = true;
+    return;
+  }
+  todayPillLabel.textContent = content.label;
+  todayPill.hidden = false;
+}
+
+// Scrolls the current month's header into view. Used both on initial load
+// (no highlight - just positioning) and from the pill's click handler
+// (with the pulse highlight, since that's an explicit "take me there").
+function scrollToCurrentMonth(withPulse) {
+  const monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
+  if (!monthEl) return;
+  monthEl.scrollIntoView({ block: "start" });
+
+  if (withPulse) {
+    const cell = container.querySelector(`.cell[data-date="${todayIso}"]`);
+    if (cell) {
+      cell.classList.remove("pulse");
+      // Force a reflow so re-adding the class restarts the animation even
+      // if the pill is tapped twice in quick succession.
+      void cell.offsetWidth;
+      cell.classList.add("pulse");
+      cell.addEventListener("animationend", () => cell.classList.remove("pulse"), { once: true });
+    }
+  }
+}
+
+const todayPill = document.createElement("button");
+todayPill.type = "button";
+todayPill.className = "today-pill";
+todayPill.hidden = true;
+
+const todayPillLabel = document.createElement("span");
+todayPillLabel.className = "today-pill-label";
+todayPill.appendChild(todayPillLabel);
+
+document.body.appendChild(todayPill);
+
+todayPill.addEventListener("click", () => scrollToCurrentMonth(true));
+
 // Builds the whole month grid. Deferred until after Supabase data has
 // loaded (see init() below) since every cell reads EVENTS/WORKOUTS/
 // TRAINING_BLOCKS.
@@ -498,6 +580,8 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
 
   const monthDiv = document.createElement("div");
   monthDiv.className = isFillerTrial ? "month trial-no-divider" : "month";
+  monthDiv.dataset.year = y;
+  monthDiv.dataset.month = m;
 
   const titleDiv = document.createElement("div");
   titleDiv.className = "month-title";
@@ -677,6 +761,8 @@ async function init() {
   }
 
   renderCalendar();
+  updateTodayPill();
+  scrollToCurrentMonth(false);
 }
 
 init();
