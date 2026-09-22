@@ -118,8 +118,10 @@ body {
 
 /* Logged-workout marker: a small dot in the corner of any day that has a
    planned session. Hollow ring = planned but not logged yet; filled solid
-   = logged. Colour is set inline per-cell to match the event's palette
-   dot, so it stays consistent with the rest of that training block. */
+   = logged, set from the popup's "Mark as complete" button, not by
+   clicking the dot itself. Colour is set inline per-cell to match the
+   event's palette dot, so it stays consistent with the rest of that
+   training block. */
 .logged-dot {
   position: absolute;
   right: 4px;
@@ -129,8 +131,7 @@ body {
   border-radius: 50%;
   border: 1.5px solid var(--dot-color, currentColor);
   background: transparent;
-  cursor: pointer;
-  padding: 0;
+  pointer-events: none;
 }
 
 .logged-dot.is-logged {
@@ -377,4 +378,26 @@ body {
 .modal-field-value.is-empty {
   color: var(--ink-soft);
   font-style: italic;
+}
+
+.modal-complete-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-complete-btn:hover {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.modal-complete-btn.is-logged {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
 }

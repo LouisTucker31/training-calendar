@@ -154,12 +154,18 @@ function renderTrainingModal(isoDate, block) {
     ? `<div class="modal-fields">${workout.sessions.map(workoutSessionHtml).join("")}</div>`
     : fieldHtml("Session", "Rest Day");
 
+  const isLogged = loggedDates.has(isoDate);
+  const completeButtonHtml = workout
+    ? `<button type="button" class="modal-complete-btn" data-complete-date="${esc(isoDate)}">${isLogged ? "Marked as complete" : "Mark as complete"}</button>`
+    : "";
+
   return `
     <h2 class="modal-title">${esc(eventName)} Training</h2>
     <p class="modal-date">${esc(formatLongDate(isoDate))}</p>
     <div class="modal-fields">
       ${fieldHtml("Week", weekLine)}
       ${sessionsHtml}
+      ${completeButtonHtml}
     </div>
   `;
 }
@@ -225,6 +231,26 @@ function openModal(html, label) {
   lastFocused = document.activeElement;
   modalCard.focus();
 }
+
+// The dot on a day's calendar cell isn't recreated when the modal
+// re-renders, so toggling logged state from the popup updates it in place
+// by looking it up from the grid.
+function updateLoggedDot(isoDate, isLogged) {
+  const cell = container.querySelector(`.cell[data-date="${isoDate}"]`);
+  const dot = cell ? cell.querySelector(".logged-dot") : null;
+  if (dot) dot.classList.toggle("is-logged", isLogged);
+}
+
+modalBody.addEventListener("click", e => {
+  const btn = e.target.closest(".modal-complete-btn");
+  if (!btn) return;
+  const isoDate = btn.dataset.completeDate;
+  toggleLogged(isoDate);
+  const isLogged = loggedDates.has(isoDate);
+  btn.textContent = isLogged ? "Marked as complete" : "Mark as complete";
+  btn.classList.toggle("is-logged", isLogged);
+  updateLoggedDot(isoDate, isLogged);
+});
 
 function closeModal() {
   modalOverlay.hidden = true;
@@ -369,12 +395,10 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
 
         if (WORKOUTS[isoDate]) {
           const isLogged = loggedDates.has(isoDate);
-          const dot = document.createElement("button");
-          dot.type = "button";
+          const dot = document.createElement("span");
           dot.className = "logged-dot" + (isLogged ? " is-logged" : "");
           dot.style.setProperty("--dot-color", palette.dot);
-          dot.setAttribute("aria-pressed", String(isLogged));
-          dot.setAttribute("aria-label", isLogged ? "Mark workout as not logged" : "Mark workout as logged");
+          dot.setAttribute("aria-hidden", "true");
           el.appendChild(dot);
         }
       }
@@ -420,21 +444,6 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
 // Event delegation: one pair of listeners handles every day tile, rather
 // than one per cell.
 container.addEventListener("click", e => {
-  const dot = e.target.closest(".logged-dot");
-  if (dot) {
-    // The dot toggles logged state in place; it must not also open the
-    // day's modal, since it sits inside the same clickable cell.
-    e.stopPropagation();
-    const cell = dot.closest(".cell[data-date]");
-    if (!cell) return;
-    const isoDate = cell.dataset.date;
-    toggleLogged(isoDate);
-    const isLogged = loggedDates.has(isoDate);
-    dot.classList.toggle("is-logged", isLogged);
-    dot.setAttribute("aria-pressed", String(isLogged));
-    dot.setAttribute("aria-label", isLogged ? "Mark workout as not logged" : "Mark workout as logged");
-    return;
-  }
   const cell = e.target.closest(".cell[data-date]");
   if (cell) handleDayClick(cell.dataset.date);
 });
