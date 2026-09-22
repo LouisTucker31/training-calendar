@@ -222,13 +222,18 @@ modalOverlay.appendChild(modalCard);
 document.body.appendChild(modalOverlay);
 
 let lastFocused = null;
+let selectedCell = null;
 
-function openModal(html, label) {
+function openModal(html, label, cell) {
   modalBody.innerHTML = html;
   modalCard.setAttribute("aria-label", label);
   modalOverlay.hidden = false;
   lastFocused = document.activeElement;
   modalCard.focus();
+
+  if (selectedCell) selectedCell.classList.remove("selected");
+  selectedCell = cell || null;
+  if (selectedCell) selectedCell.classList.add("selected");
 }
 
 // The dot on a day's calendar cell isn't recreated when the modal
@@ -246,15 +251,16 @@ modalBody.addEventListener("click", e => {
   const isoDate = btn.dataset.completeDate;
   toggleLogged(isoDate);
   const isLogged = loggedDates.has(isoDate);
-  btn.textContent = isLogged ? "Marked as complete" : "Mark as complete";
-  btn.classList.toggle("is-logged", isLogged);
   updateLoggedDot(isoDate, isLogged);
+  closeModal();
 });
 
 function closeModal() {
   modalOverlay.hidden = true;
   if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
   lastFocused = null;
+  if (selectedCell) selectedCell.classList.remove("selected");
+  selectedCell = null;
 }
 
 modalCloseBtn.addEventListener("click", closeModal);
@@ -275,22 +281,23 @@ document.addEventListener("keydown", e => {
 });
 
 function handleDayClick(isoDate) {
+  const cell = container.querySelector(`.cell[data-date="${isoDate}"]`);
   const dayEvents = eventsByDate[isoDate];
   if (dayEvents && dayEvents.length) {
     const html = dayEvents.length > 1
       ? dayEvents.map(renderEventModal).join('<div class="modal-event-divider"></div>')
       : renderEventModal(dayEvents[0]);
     const label = dayEvents.map(ev => `${ev.name}, ${formatLongDate(ev.date)}`).join("; ");
-    openModal(html, label);
+    openModal(html, label, cell);
     return;
   }
   const block = trainingBlockFor(isoDate);
   if (block) {
     const ev = EVENTS.find(e => e.date === block.eventDate);
-    openModal(renderTrainingModal(isoDate, block), `${ev ? ev.name : "Event"} training, ${formatLongDate(isoDate)}`);
+    openModal(renderTrainingModal(isoDate, block), `${ev ? ev.name : "Event"} training, ${formatLongDate(isoDate)}`, cell);
     return;
   }
-  openModal(renderBlankModal(), `${formatLongDate(isoDate)}, no event`);
+  openModal(renderBlankModal(), `${formatLongDate(isoDate)}, no event`, cell);
 }
 
 const today = new Date();
