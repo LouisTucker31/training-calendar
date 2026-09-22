@@ -705,3 +705,20 @@ body {
 .days .cell.pulse {
   animation: today-pill-pulse 1.4s ease-out;
 }
+
+/* Anyone with reduced-motion enabled at the OS level gets these
+   near-instant instead of animated - covers the modal/event-list open
+   animation, the today-cell pulse, and the event-list chevron rotation.
+   The today-pill's scroll-to-month behaviour is also switched from smooth
+   to instant in script.js under the same media query. */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .event-list-overlay,
+  .modal-card,
+  .event-list-panel,
+  .days .cell.pulse,
+  .event-list-row-chevron {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}

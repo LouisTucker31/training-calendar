@@ -254,6 +254,9 @@ function updateLoggedDot(isoDate, isLogged) {
   const cell = container.querySelector(`.cell[data-date="${isoDate}"]`);
   const dot = cell ? cell.querySelector(".logged-dot") : null;
   if (dot) dot.classList.toggle("is-logged", isLogged);
+  if (cell && cell.dataset.baseLabel) {
+    cell.setAttribute("aria-label", cell.dataset.baseLabel + (isLogged ? ", logged as complete" : ", not yet logged"));
+  }
 }
 
 modalBody.addEventListener("click", e => {
@@ -293,11 +296,24 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     closeModal();
   } else if (e.key === "Tab") {
-    // The dialog's only interactive child is the close button, so keep
-    // keyboard focus there rather than letting Tab reach calendar cells
-    // hidden behind the overlay.
-    e.preventDefault();
-    modalCloseBtn.focus();
+    // Cycle Tab/Shift+Tab between the modal's own focusable elements
+    // (close button, plus whatever modalBody's current content adds - e.g.
+    // "Mark as complete" - and any link inside it) rather than letting
+    // focus leave into calendar cells hidden behind the overlay. Forcing
+    // focus to modalCloseBtn unconditionally here previously made any
+    // other focusable element (like the complete button) unreachable by
+    // keyboard entirely.
+    const focusable = modalCard.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 });
 
@@ -537,11 +553,13 @@ function updateTodayPill() {
 // (instant - just positioning, withPulse false) and from the pill's click
 // handler (smooth-scrolled and pulsed, since that's an explicit "take me
 // there" the user should be able to see happen).
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function scrollToCurrentMonth(withPulse) {
   const monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
   if (!monthEl) return;
 
-  monthEl.scrollIntoView({ block: "start", behavior: withPulse ? "smooth" : "auto" });
+  monthEl.scrollIntoView({ block: "start", behavior: (withPulse && !prefersReducedMotion) ? "smooth" : "auto" });
 
   if (withPulse) {
     const cell = container.querySelector(`.cell[data-date="${todayIso}"]`);
@@ -572,8 +590,10 @@ todayPill.addEventListener("click", () => {
   // Waits for the smooth scroll to settle before opening today's popup,
   // so the two happen in sequence rather than the modal appearing over a
   // page that's still mid-scroll. A fixed delay rather than the scrollend
-  // event, which Safari doesn't fire reliably.
-  setTimeout(() => handleDayClick(todayIso), 650);
+  // event, which Safari doesn't fire reliably. With reduced motion the
+  // scroll above is instant (no animation to wait for), so the popup can
+  // open right away instead of on an artificial delay.
+  setTimeout(() => handleDayClick(todayIso), prefersReducedMotion ? 0 : 650);
 });
 
 // Builds the whole month grid. Deferred until after Supabase data has
@@ -680,6 +700,14 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
           dot.style.setProperty("--dot-color", palette.dot);
           dot.setAttribute("aria-hidden", "true");
           el.appendChild(dot);
+          // The dot itself is aria-hidden (purely decorative colour/shape),
+          // so logged state needs a text equivalent in the cell's own
+          // label - otherwise it's sighted-only information. Stored as the
+          // "base" label (without logged-state suffix) on the element so
+          // updateLoggedDot can rebuild it cleanly after a toggle, rather
+          // than string-appending onto whatever's already there.
+          el.dataset.baseLabel = ariaLabel;
+          ariaLabel += isLogged ? ", logged as complete" : ", not yet logged";
         }
       }
     }
