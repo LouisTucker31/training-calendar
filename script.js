@@ -540,9 +540,33 @@ function updateTodayPill() {
 function scrollToCurrentMonth(withPulse) {
   const monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
   if (!monthEl) return;
-  monthEl.scrollIntoView({ block: "start", behavior: withPulse ? "smooth" : "auto" });
+
+  // scrollIntoView's own "start" alignment isn't reliable here - on the
+  // desktop two-column grid a row's scroll-into-view target can land
+  // short if the sibling month in that row is a different height. Scroll
+  // to an explicit page offset instead: the month element's current
+  // distance from the top of the viewport, added to the page's current
+  // scroll position, lands its top edge exactly at the top of the
+  // viewport regardless of layout.
+  function scrollToMonthTop(behavior) {
+    const targetY = window.scrollY + monthEl.getBoundingClientRect().top;
+    window.scrollTo({ top: targetY, behavior });
+  }
+
+  scrollToMonthTop(withPulse ? "smooth" : "auto");
 
   if (withPulse) {
+    // Mobile Safari's address bar can collapse mid-scroll, changing the
+    // visual viewport height and leaving the first scrollTo short of the
+    // mark. Re-measure and correct once the animation has had time to
+    // settle - scrollend is the precise signal where supported, with a
+    // fixed delay as a fallback for Safari, which doesn't fire it yet.
+    if ("onscrollend" in window) {
+      window.addEventListener("scrollend", () => scrollToMonthTop("auto"), { once: true });
+    } else {
+      setTimeout(() => scrollToMonthTop("auto"), 500);
+    }
+
     const cell = container.querySelector(`.cell[data-date="${todayIso}"]`);
     if (cell) {
       cell.classList.remove("pulse");
