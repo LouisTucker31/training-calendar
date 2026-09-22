@@ -4,58 +4,39 @@ const dayNames = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const startYear = 2026, startMonth = 6;  // July 2026 (0-indexed)
 const endYear = 2027, endMonth = 9;      // October 2027
 
-// EVENTS, PALETTE and TRAINING_BLOCKS_RAW are defined in data.js (loaded
-// before this file) so the schedule can be edited without touching any
-// rendering logic.
+// PALETTE is defined in data.js; EVENTS, TRAINING_BLOCKS_RAW and WORKOUTS
+// are fetched from Supabase by supabase.js's loadTrainingData(), assigned
+// once init() runs below. Declared here (rather than left implicitly
+// global) so every function in this file that closes over them - written
+// back when data.js held them as plain consts - keeps working unchanged.
+let EVENTS, TRAINING_BLOCKS_RAW, WORKOUTS;
 
-const eventsByDate = {};
-EVENTS.forEach(ev => {
-  const palette = PALETTE[ev.colorIndex % PALETTE.length];
-  if (!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
-  eventsByDate[ev.date].push({ ...ev, ...palette });
-});
+let eventsByDate = {};
+let TRAINING_BLOCKS = [];
 
-// colorIndex isn't set by hand in data.js - it's looked up here from the
-// linked event, so a block can never drift out of sync with its event's
-// colour (e.g. after a recolour).
-const TRAINING_BLOCKS = TRAINING_BLOCKS_RAW.map(block => {
-  const ev = EVENTS.find(e => e.date === block.eventDate);
-  return { ...block, colorIndex: ev ? ev.colorIndex : 0 };
-});
+// Logged-workout state now lives in Supabase (training_logged_workouts),
+// not localStorage, so it syncs across devices. loggedDates is a local
+// cache populated at startup; toggleLogged writes through to Supabase and
+// updates the cache optimistically, then reverts on failure so the UI
+// never drifts out of sync with what's actually stored.
+let loggedDates = new Set();
 
-// Logged-workout state lives only in this browser (localStorage), keyed by
-// ISO date. Wrapped in try/catch since storage access can throw (private
-// browsing, blocked site data) and a missing "logged" mark should never
-// break the calendar.
-const LOGGED_STORAGE_KEY = "trainingCalendar.loggedDates";
+async function toggleLogged(isoDate) {
+  const wasLogged = loggedDates.has(isoDate);
+  if (wasLogged) loggedDates.delete(isoDate);
+  else loggedDates.add(isoDate);
 
-function loadLoggedDates() {
   try {
-    const raw = localStorage.getItem(LOGGED_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed : []);
-  } catch {
-    return new Set();
+    if (wasLogged) await deleteLoggedDate(isoDate);
+    else await insertLoggedDate(isoDate);
+  } catch (err) {
+    // Revert the optimistic update if the write didn't actually happen,
+    // so a dropped connection can't silently desync local state from
+    // Supabase.
+    if (wasLogged) loggedDates.add(isoDate);
+    else loggedDates.delete(isoDate);
+    throw err;
   }
-}
-
-const loggedDates = loadLoggedDates();
-
-function saveLoggedDates() {
-  try {
-    localStorage.setItem(LOGGED_STORAGE_KEY, JSON.stringify([...loggedDates]));
-  } catch {
-    // Storage unavailable - logged state just won't persist this session.
-  }
-}
-
-function toggleLogged(isoDate) {
-  if (loggedDates.has(isoDate)) {
-    loggedDates.delete(isoDate);
-  } else {
-    loggedDates.add(isoDate);
-  }
-  saveLoggedDates();
 }
 
 function trainingBlockFor(isoDate) {
@@ -279,10 +260,19 @@ modalBody.addEventListener("click", e => {
   const btn = e.target.closest(".modal-complete-btn");
   if (!btn) return;
   const isoDate = btn.dataset.completeDate;
-  toggleLogged(isoDate);
-  const isLogged = loggedDates.has(isoDate);
-  updateLoggedDot(isoDate, isLogged);
+
+  // loggedDates flips synchronously (before the network call) inside
+  // toggleLogged, so the dot/modal can update immediately without waiting
+  // on the request - the .catch below only fires if the write actually
+  // failed and the optimistic change had to be reverted.
+  const toggling = toggleLogged(isoDate);
+  updateLoggedDot(isoDate, loggedDates.has(isoDate));
   closeModal();
+
+  toggling.catch(() => {
+    updateLoggedDot(isoDate, loggedDates.has(isoDate));
+    alert("Couldn't save - check your connection and try again.");
+  });
 });
 
 function closeModal() {
@@ -495,6 +485,10 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeEventList();
 });
 
+// Builds the whole month grid. Deferred until after Supabase data has
+// loaded (see init() below) since every cell reads EVENTS/WORKOUTS/
+// TRAINING_BLOCKS.
+function renderCalendar() {
 let y = startYear, m = startMonth;
 while (y < endYear || (y === endYear && m <= endMonth)) {
   // Blank out each month's leading/trailing filler cells: no grey fill,
@@ -633,6 +627,7 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
   m++;
   if (m > 11) { m = 0; y++; }
 }
+}
 
 // Event delegation: one pair of listeners handles every day tile, rather
 // than one per cell.
@@ -648,3 +643,40 @@ container.addEventListener("keydown", e => {
     handleDayClick(cell.dataset.date);
   }
 });
+
+async function init() {
+  try {
+    const data = await loadTrainingData();
+    EVENTS = data.EVENTS;
+    TRAINING_BLOCKS_RAW = data.TRAINING_BLOCKS_RAW;
+    WORKOUTS = data.WORKOUTS;
+  } catch (err) {
+    container.innerHTML = `<p class="modal-empty-note" style="padding:24px;">Couldn't load the calendar data. Check your connection and reload.</p>`;
+    throw err;
+  }
+
+  EVENTS.forEach(ev => {
+    const palette = PALETTE[ev.colorIndex % PALETTE.length];
+    if (!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
+    eventsByDate[ev.date].push({ ...ev, ...palette });
+  });
+
+  // colorIndex isn't set by hand in Supabase - it's looked up here from
+  // the linked event, so a block can never drift out of sync with its
+  // event's colour (e.g. after a recolour).
+  TRAINING_BLOCKS = TRAINING_BLOCKS_RAW.map(block => {
+    const ev = EVENTS.find(e => e.date === block.eventDate);
+    return { ...block, colorIndex: ev ? ev.colorIndex : 0 };
+  });
+
+  try {
+    loggedDates = await fetchLoggedDates();
+  } catch {
+    // Logged state just won't be pre-populated this load if this fails -
+    // the calendar itself (built from EVENTS/WORKOUTS above) still works.
+  }
+
+  renderCalendar();
+}
+
+init();
