@@ -314,7 +314,177 @@ function handleDayClick(isoDate) {
 }
 
 const today = new Date();
+const todayIso = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
 const container = document.getElementById("calendar");
+
+// Event list overview: a header-triggered panel listing every event
+// chronologically, each row expandable for full detail. Entirely additive
+// - it doesn't touch day-tile rendering, the logged-dot, or the
+// day-detail modal above.
+function daysUntil(isoDate) {
+  const ms = parseIso(isoDate) - parseIso(todayIso);
+  return Math.round(ms / (24 * 60 * 60 * 1000));
+}
+
+function countdownText(isoDate) {
+  const days = daysUntil(isoDate);
+  if (days === 0) return "Today";
+  if (days > 0) return days === 1 ? "In 1 day" : `In ${days} days`;
+  const ago = Math.abs(days);
+  return ago === 1 ? "1 day ago" : `${ago} days ago`;
+}
+
+// Same three-state read as the logged-workout dot: hollow ring = not yet
+// happened (future), filled = happened or happening (current/past). Past
+// additionally mutes the whole row, so "done" and "in progress" stay
+// visually distinct from each other as well as from "upcoming".
+function eventListState(ev, block) {
+  if (ev.date < todayIso) return "past";
+  if (block && todayIso >= block.start && todayIso <= block.end) return "current";
+  if (ev.date === todayIso) return "current";
+  return "future";
+}
+
+function eventListRowHtml(ev, index) {
+  const palette = PALETTE[ev.colorIndex % PALETTE.length];
+  const block = TRAINING_BLOCKS.find(b => b.eventDate === ev.date);
+  const state = eventListState(ev, block);
+
+  const disciplines = (ev.disciplines && ev.disciplines.length)
+    ? ev.disciplines
+    : [{ discipline: "", type: "", distance: "", duration: "", pace: "" }];
+
+  const blockFieldsHtml = block
+    ? `
+      ${fieldHtml("Training block", `${formatLongDate(block.start)} - ${formatLongDate(block.end)}`)}
+      ${fieldHtml("Block length", `${weeksBetween(block.start, block.end)} weeks`)}
+    `
+    : "";
+
+  const elevationParts = disciplines
+    .filter(d => d.elevation && String(d.elevation).trim().length > 0)
+    .map(d => `${d.discipline || "Discipline"}: ${d.elevation}`);
+  const elevationHtml = elevationParts.length
+    ? fieldHtml("Elevation", elevationParts.join(" | "))
+    : "";
+
+  return `
+    <div class="event-list-row is-${state}">
+      <button type="button" class="event-list-row-head" data-row-index="${index}" aria-expanded="false" aria-controls="event-list-body-${index}">
+        <span class="event-list-dot" style="--dot-color:${esc(palette.dot)}" aria-hidden="true"></span>
+        <span class="event-list-row-name">${esc(ev.name)}</span>
+        <span class="event-list-row-when">${esc(formatLongDate(ev.date))}<br>${esc(countdownText(ev.date))}</span>
+        <svg class="event-list-row-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"></polyline></svg>
+      </button>
+      <div class="event-list-row-body" id="event-list-body-${index}" hidden>
+        <div class="modal-fields">
+          ${fieldHtml("Location", ev.location)}
+          ${elevationHtml}
+          ${ev.website ? linkFieldHtml("Website", ev.website, "Official event website") : ""}
+          ${ev.garminEpicLink ? linkFieldHtml("Garmin Epic Link", ev.garminEpicLink, ev.garminEpicLinkLabel) : ""}
+          ${blockFieldsHtml}
+          <div class="modal-fields">
+            ${disciplines.map(disciplineHtml).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderEventListPanel() {
+  const sorted = [...EVENTS].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  return sorted.map(eventListRowHtml).join("");
+}
+
+const eventListOverlay = document.createElement("div");
+eventListOverlay.className = "event-list-overlay";
+eventListOverlay.hidden = true;
+
+const eventListPanel = document.createElement("div");
+eventListPanel.className = "event-list-panel";
+eventListPanel.setAttribute("role", "dialog");
+eventListPanel.setAttribute("aria-modal", "true");
+eventListPanel.setAttribute("aria-label", "Event list");
+eventListPanel.tabIndex = -1;
+
+const eventListHeader = document.createElement("div");
+eventListHeader.className = "event-list-panel-header";
+eventListHeader.innerHTML = `<h2 class="event-list-panel-title">All events</h2>`;
+
+const eventListCloseBtn = document.createElement("button");
+eventListCloseBtn.type = "button";
+eventListCloseBtn.className = "event-list-close";
+eventListCloseBtn.setAttribute("aria-label", "Close");
+eventListCloseBtn.textContent = "×";
+eventListHeader.appendChild(eventListCloseBtn);
+
+const eventListBody = document.createElement("div");
+
+eventListPanel.appendChild(eventListHeader);
+eventListPanel.appendChild(eventListBody);
+eventListOverlay.appendChild(eventListPanel);
+document.body.appendChild(eventListOverlay);
+
+const eventListTrigger = document.getElementById("event-list-trigger");
+let eventListLastFocused = null;
+
+// Anchors the panel under the trigger button using its live position,
+// rather than a fixed pixel offset, so it stays lined up even though the
+// header's own padding changes at the 900px breakpoint. Skipped on mobile
+// (640px and under), where the panel is a full-width fixed sheet instead
+// and the mobile CSS's own inset:0 takes over positioning - an inline
+// top/right here would otherwise outrank that rule's specificity.
+function positionEventListPanel() {
+  if (window.matchMedia("(max-width: 640px)").matches) {
+    eventListPanel.style.top = "";
+    eventListPanel.style.right = "";
+    return;
+  }
+  const rect = eventListTrigger.getBoundingClientRect();
+  eventListPanel.style.top = `${rect.bottom + 8}px`;
+  eventListPanel.style.right = `${window.innerWidth - rect.right}px`;
+}
+
+function openEventList() {
+  eventListBody.innerHTML = renderEventListPanel();
+  eventListOverlay.hidden = false;
+  positionEventListPanel();
+  eventListTrigger.setAttribute("aria-expanded", "true");
+  eventListLastFocused = document.activeElement;
+  eventListPanel.focus();
+}
+
+function closeEventList() {
+  eventListOverlay.hidden = true;
+  eventListTrigger.setAttribute("aria-expanded", "false");
+  if (eventListLastFocused && typeof eventListLastFocused.focus === "function") eventListLastFocused.focus();
+  eventListLastFocused = null;
+}
+
+eventListTrigger.addEventListener("click", () => {
+  if (eventListOverlay.hidden) openEventList();
+  else closeEventList();
+});
+eventListCloseBtn.addEventListener("click", closeEventList);
+eventListOverlay.addEventListener("click", e => {
+  if (e.target === eventListOverlay) closeEventList();
+});
+eventListBody.addEventListener("click", e => {
+  const head = e.target.closest(".event-list-row-head");
+  if (!head) return;
+  const body = document.getElementById(head.getAttribute("aria-controls"));
+  const expanded = head.getAttribute("aria-expanded") === "true";
+  head.setAttribute("aria-expanded", String(!expanded));
+  if (body) body.hidden = expanded;
+});
+window.addEventListener("resize", () => {
+  if (!eventListOverlay.hidden) positionEventListPanel();
+});
+document.addEventListener("keydown", e => {
+  if (eventListOverlay.hidden) return;
+  if (e.key === "Escape") closeEventList();
+});
 
 let y = startYear, m = startMonth;
 while (y < endYear || (y === endYear && m <= endMonth)) {
