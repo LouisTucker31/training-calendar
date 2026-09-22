@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>One-time logged-workout migration</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+  button { padding: 10px 18px; font-size: 15px; cursor: pointer; }
+  pre { background: #f4f4f4; padding: 12px; white-space: pre-wrap; word-break: break-word; }
+  .ok { color: #2a7a2a; }
+  .err { color: #b3261e; }
+</style>
+</head>
+<body>
+<h1>One-time migration: localStorage logged dates -&gt; Supabase</h1>
+<p>Run this on whichever browser/device still has the old "Mark as complete" history in localStorage (from before the Supabase switch). Reads trainingCalendar.loggedDates from this browser and upserts each date into training_logged_workouts. Safe to run more than once.</p>
+<button id="run">Run migration</button>
+<pre id="log"></pre>
+
+<script>
+  const SUPABASE_URL = "https://vumsggojkacntpzhprqh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXNnZ29qa2FjbnRwemhwcnFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MTcwMzMsImV4cCI6MjEwMzk5MzAzM30.6GOt0pXy2hi_sQcIMmrCeb_0UF9_tKJQqmvj6iSGWTU";
+  const LOGGED_STORAGE_KEY = "trainingCalendar.loggedDates";
+
+  const logEl = document.getElementById("log");
+  function log(msg, cls) {
+    const line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = msg;
+    logEl.appendChild(line);
+  }
+
+  document.getElementById("run").addEventListener("click", async () => {
+    logEl.textContent = "";
+    try {
+      const raw = localStorage.getItem(LOGGED_STORAGE_KEY);
+      const dates = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(dates) || dates.length === 0) {
+        log("No logged dates found in this browser's localStorage - nothing to migrate.", "ok");
+        return;
+      }
+      log(`Found ${dates.length} logged date(s) in localStorage: ${dates.join(", ")}`);
+
+      const rows = dates.map(date => ({ date }));
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/training_logged_workouts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Prefer": "resolution=merge-duplicates",
+        },
+        body: JSON.stringify(rows),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status} ${text}`);
+      }
+      log(`Upserted ${rows.length} row(s) into training_logged_workouts.`, "ok");
+      log("Migration complete. You can now clear this browser's old localStorage entry if you like (not required).", "ok");
+    } catch (err) {
+      log(`Failed: ${err.message}`, "err");
+    }
+  });
+</script>
+</body>
+</html>
