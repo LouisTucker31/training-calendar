@@ -21,7 +21,8 @@ const EVENTS = [
   {
     date: "2026-11-15", name: "Bristol Half", colorIndex: 1, // pink
     location: "Bristol, Somerset",
-    garminEpicLink: "",
+    garminEpicLink: "https://connect.garmin.com/app/epic/1f25310e-61ee-4440-a994-bdb0ba9edd9a",
+    garminEpicLinkLabel: "Bristol Half Epic",
     disciplines: [
       { discipline: "Run", type: "Hilly", distance: "21.1km", duration: "2:00:00-2:06:36", pace: "5:41-6:00/km" },
     ],
