@@ -117,7 +117,7 @@ function renderTrainingModal(isoDate, block) {
 
   const sessionsHtml = workout
     ? `<div class="modal-fields">${workout.sessions.map(workoutSessionHtml).join("")}</div>`
-    : "";
+    : fieldHtml("Session", "Rest Day");
 
   return `
     <h2 class="modal-title">${esc(eventName)} Training</h2>
