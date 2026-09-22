@@ -39,7 +39,8 @@ const EVENTS = [
   {
     date: "2027-04-03", name: "Jurassic Century", colorIndex: 2, // green
     location: "Exeter to Poole",
-    garminEpicLink: "",
+    garminEpicLink: "https://connect.garmin.com/app/epic/2d593de2-56f8-4877-a5d5-69830b74ec32",
+    garminEpicLinkLabel: "Jurassic Century Epic",
     disciplines: [
       { discipline: "Bike", type: "Hilly", distance: "180km", duration: "8:00:00-9:00:00", pace: "20-22.5 km/h" },
     ],
