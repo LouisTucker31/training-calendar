@@ -113,15 +113,20 @@ function renderBlankModal() {
   return `<p class="modal-empty-note">Nothing scheduled on this day.</p>`;
 }
 
-// Splits a "2 x 150 m endurance + 3 x 50 m speed" style set into separate
-// lines, one per "+"-joined part, so each component of a set reads as its
-// own row rather than one run-on string.
+// Splits a set into separate lines, one per category, so each part reads
+// as its own row rather than one run-on string. Richer entries use "|" to
+// separate categories (e.g. "Workout: ... | Effort: ... | Skills: ...");
+// simpler ones just use "+" between parts (e.g. "2 x 150 m endurance +
+// 3 x 50 m speed"). A "|"-bearing string is split on "|" only, so the
+// "->" steps within its Workout segment stay on one line together.
 function setDetailsHtml(details) {
   const hasValue = details && String(details).trim().length > 0;
   if (!hasValue) {
     return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value is-empty">Not added yet</span></div>`;
   }
-  const parts = String(details).split("+").map(p => p.trim()).filter(Boolean);
+  const text = String(details);
+  const separator = text.includes("|") ? "|" : "+";
+  const parts = text.split(separator).map(p => p.trim()).filter(Boolean);
   const linesHtml = parts.map(p => esc(p)).join("<br>");
   return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value">${linesHtml}</span></div>`;
 }

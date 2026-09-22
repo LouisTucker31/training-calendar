@@ -344,4 +344,370 @@ const WORKOUTS = {
   "2026-11-10": { week: 6, phase: "Taper / Race", sessions: [
     { day: "Tue", discipline: "Run", session: "Shakeout Run", duration: "20 min total", details: "Easy / Recovery; 4 x 20 sec relaxed strides embedded in final 10 min", rpe: "Easy" },
   ]},
+
+  // --- IRONMAN Belgium block: Week 1 (12-18 Apr 27) ---
+  "2027-04-12": { week: 1, phase: "Base", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-04-13": { week: 1, phase: "Base", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Technique / Endurance Swim", duration: "1,800 m", details: "Workout: 300 m Easy -> 6 x 50 m technique (20 sec rest; catch-up/fingertip-drag) -> 8 x 100 m Endurance (20 sec) -> 4 x 50 m build (20 sec) -> 200 m Easy. | Effort: Easy / Endurance. | Skills: Re-establish feel for the water, relaxed catch and body position.", rpe: "Pool" },
+  ]},
+  "2027-04-15": { week: 1, phase: "Base", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "60 min", details: "Workout: 60 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-04-16": { week: 1, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "2,200 m", details: "Workout: 300 m Easy -> 8 x 200 m Endurance (30 sec rest) -> 300 m Easy. | Effort: Endurance. | Skills: Even pacing and relaxed form.", rpe: "Pool endurance" },
+  ]},
+  "2027-04-17": { week: 1, phase: "Base", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "2:30 hrs", details: "Workout: 20 min Easy -> 110 min Endurance HR -> 20 min Easy. | Terrain: Flat / rolling; keep climbs controlled. | Fuel: Resume consistent fuelling and hydration.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 2 (19-25 Apr 27) ---
+  "2027-04-19": { week: 2, phase: "Base", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-04-20": { week: 2, phase: "Base", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,000 m", details: "Workout: 300 m Easy -> 6 x 50 m technique (20 sec rest) -> 10 x 100 m CSS / Threshold (25 sec) -> 400 m Easy. | Effort: CSS / Threshold on the 100s. | Skills: Hold form under controlled pressure.", rpe: "Pool CSS work" },
+  ]},
+  "2027-04-22": { week: 2, phase: "Base", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "70 min", details: "Workout: 70 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-04-23": { week: 2, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "2,400 m", details: "Workout: 300 m Easy -> 9 x 200 m Endurance (30 sec rest) -> 300 m Easy. | Effort: Endurance. | Skills: Consistent stroke length and pacing.", rpe: "Pool endurance" },
+  ]},
+  "2027-04-24": { week: 2, phase: "Base", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "2:45 hrs", details: "Workout: 20 min Easy -> 125 min Endurance HR -> 20 min Easy. | Terrain: Rolling. | Fuel: Practise regular carbohydrate and fluid intake.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 3 (26 Apr-02 May 27) ---
+  "2027-04-26": { week: 3, phase: "Base", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-04-27": { week: 3, phase: "Base", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,100 m", details: "Workout: 300 m Easy -> 4 x 50 m technique (20 sec) -> 8 x 150 m CSS / Threshold (30 sec rest) -> 4 x 50 m Endurance (20 sec) -> 200 m Easy. | Effort: CSS / Threshold on the 150s. | Skills: Maintain stroke quality as rep length increases.", rpe: "Pool CSS work" },
+  ]},
+  "2027-04-29": { week: 3, phase: "Base", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "80 min", details: "Workout: 80 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-04-30": { week: 3, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "2,600 m", details: "Workout: 300 m Easy -> 10 x 200 m Endurance (30 sec rest) -> 300 m Easy. | Effort: Endurance.", rpe: "Pool endurance" },
+  ]},
+  "2027-05-01": { week: 3, phase: "Base", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "3:00 hrs", details: "Workout: 20 min Easy -> 140 min Endurance HR -> 20 min Easy. | Terrain: Rolling; controlled climbing. | Fuel: Use a repeatable event-style fuelling routine.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 4 (03-09 May 27) - Recovery ---
+  "2027-05-03": { week: 4, phase: "Recovery", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "35 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-05-04": { week: 4, phase: "Recovery", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Recovery Swim", duration: "1,600 m", details: "Workout: 300 m Easy -> 6 x 50 m technique (20 sec) -> 8 x 100 m Easy / Recovery (20 sec) -> 200 m Easy. | Effort: Easy / Recovery. | Skills: Relaxed stroke; no pace chasing.", rpe: "Pool easy technique" },
+  ]},
+  "2027-05-06": { week: 4, phase: "Recovery", sessions: [
+    { day: "Thu", discipline: "Run", session: "Controlled Aerobic Run", duration: "60 min", details: "Workout: 10 min Easy -> 40 min Endurance -> 10 min Easy. | Pace: Endurance / Long.", rpe: "Endurance" },
+  ]},
+  "2027-05-07": { week: 4, phase: "Recovery", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Recovery Endurance Swim", duration: "2,000 m", details: "Workout: 300 m Easy -> 7 x 200 m Easy / Endurance (30 sec rest) -> 300 m Easy. | Effort: Easy / Recovery.", rpe: "Pool" },
+  ]},
+  "2027-05-08": { week: 4, phase: "Recovery", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Recovery Endurance Bike", duration: "2:00 hrs", details: "Workout: 2:00 hrs continuous Easy / Endurance HR. | Terrain: Mostly flat / gently rolling; finish fresh.", rpe: "Easy / Endurance HR" },
+  ]},
+
+  // --- Week 5 (10-16 May 27) - Build ---
+  "2027-05-10": { week: 5, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-05-11": { week: 5, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,200 m", details: "Workout: 300 m Easy -> 5 x 200 m CSS / Threshold (30 sec rest) -> 6 x 100 m Endurance (20 sec) -> 300 m Easy. | Effort: CSS / Threshold on the 200s.", rpe: "Pool CSS work" },
+  ]},
+  "2027-05-13": { week: 5, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "90 min", details: "Workout: 90 min continuous Easy / Endurance. | Pace: Endurance / Long.", rpe: "Endurance" },
+  ]},
+  "2027-05-14": { week: 5, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "2,800 m", details: "Workout: 300 m Easy -> 11 x 200 m Endurance (30 sec rest) -> 300 m Easy. | Effort: Endurance.", rpe: "Pool endurance" },
+  ]},
+  "2027-05-15": { week: 5, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "3:15 hrs", details: "Workout: 20 min Easy -> 155 min Endurance HR -> 20 min Easy. | Terrain: Rolling; begin using longer sustained sections. | Fuel: Consistent intake throughout the main block.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 6 (17-23 May 27) - Build ---
+  "2027-05-17": { week: 6, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "50 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-05-18": { week: 6, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality / Endurance Swim", duration: "2,300 m", details: "Workout: 300 m Easy -> 5 x 200 m CSS / Threshold (30 sec rest) -> 6 x 100 m Endurance (20 sec) -> 400 m Easy. | Effort: CSS / Threshold then Endurance.", rpe: "Pool" },
+  ]},
+  "2027-05-20": { week: 6, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "100 min", details: "Workout: 15 min Easy -> 3 x 10 min at Ironman Race Pace with 3 min Easy between reps -> 49 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks. | Terrain: Flat / gently rolling.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-05-21": { week: 6, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "3,000 m", details: "Workout: 300 m Easy -> 12 x 200 m Endurance (30 sec rest) -> 300 m Easy. | Effort: Endurance.", rpe: "Pool endurance" },
+  ]},
+  "2027-05-22": { week: 6, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "3:30 hrs", details: "Workout: 20 min Easy -> 170 min Endurance HR -> 20 min Easy. | Terrain: Rolling. | Fuel: Practise planned race carbohydrate and hydration pattern.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 7 (24-30 May 27) - Build ---
+  "2027-05-24": { week: 7, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "50 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-05-25": { week: 7, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,400 m", details: "Workout: 300 m Easy -> 6 x 200 m CSS / Threshold (30 sec rest) -> 6 x 100 m Endurance (20 sec) -> 300 m Easy. | Effort: CSS / Threshold on the 200s.", rpe: "Pool CSS work" },
+  ]},
+  "2027-05-27": { week: 7, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "110 min", details: "Workout: 110 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-05-28": { week: 7, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "3,200 m", details: "Workout: 400 m Easy -> 12 x 200 m Endurance (30 sec rest) -> 400 m Easy. | Effort: Endurance.", rpe: "Pool endurance" },
+  ]},
+  "2027-05-29": { week: 7, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "3:45 hrs", details: "Workout: 25 min Easy -> 175 min Endurance HR -> 25 min Easy. | Terrain: Rolling / hilly; stay disciplined on climbs. | Fuel: Full long-ride fuelling practice.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 8 (31 May-06 Jun 27) - Build ---
+  "2027-05-31": { week: 8, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-06-01": { week: 8, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Recovery Swim", duration: "1,800 m", details: "Workout: 300 m Easy -> 6 x 50 m technique (20 sec) -> 10 x 100 m Easy / Recovery (20 sec) -> 200 m Easy. | Effort: Easy / Recovery.", rpe: "Pool easy technique" },
+  ]},
+  "2027-06-03": { week: 8, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Controlled Aerobic Run", duration: "75 min", details: "Workout: 15 min Easy -> 45 min Endurance -> 15 min Easy. | Pace: Endurance / Long.", rpe: "Endurance" },
+  ]},
+  "2027-06-04": { week: 8, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "3,200 m", details: "Workout: 400 m Easy -> 12 x 200 m Endurance (30 sec rest) -> 400 m Easy. | Effort: Endurance. | Skills: Smooth pacing; finish controlled ahead of the holiday.", rpe: "Pool endurance" },
+  ]},
+  "2027-06-05": { week: 8, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Easy Endurance Bike", duration: "2:30 hrs", details: "Workout: 2:30 hrs continuous Easy / Endurance HR. | Terrain: Flat / rolling; reduced volume before holiday.", rpe: "Easy / Endurance HR" },
+  ]},
+
+  // --- Week 9 (07-13 Jun 27) - Holiday: full rest week, every day. ---
+  "2027-06-07": { week: 9, phase: "Holiday", sessions: [
+    { day: "Mon", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "full rest week" },
+  ]},
+  "2027-06-08": { week: 9, phase: "Holiday", sessions: [
+    { day: "Tue", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "full rest week" },
+  ]},
+  "2027-06-09": { week: 9, phase: "Holiday", sessions: [
+    { day: "Wed", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "" },
+  ]},
+  "2027-06-10": { week: 9, phase: "Holiday", sessions: [
+    { day: "Thu", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "full rest week" },
+  ]},
+  "2027-06-11": { week: 9, phase: "Holiday", sessions: [
+    { day: "Fri", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "full rest week" },
+  ]},
+  "2027-06-12": { week: 9, phase: "Holiday", sessions: [
+    { day: "Sat", discipline: "Rest", session: "Rest", duration: "Holiday", details: "", rpe: "full rest week" },
+  ]},
+
+  // --- Week 10 (14-20 Jun 27) - Build ---
+  "2027-06-14": { week: 10, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-06-15": { week: 10, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,500 m", details: "Workout: 300 m Easy -> 5 x 200 m CSS / Threshold (30 sec rest) -> 8 x 100 m Endurance (20 sec) -> 400 m Easy. | Effort: CSS / Threshold on the 200s.", rpe: "Pool CSS work" },
+  ]},
+  "2027-06-17": { week: 10, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "120 min", details: "Workout: 120 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-06-18": { week: 10, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "3,300 m", details: "Workout: 400 m Easy -> 5 x 500 m Endurance (40 sec rest) -> 400 m Easy. | Effort: Endurance. | Skills: Longer uninterrupted blocks and relaxed rhythm.", rpe: "Pool endurance" },
+  ]},
+  "2027-06-19": { week: 10, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "4:00 hrs", details: "Workout: 30 min Easy -> 180 min Endurance HR -> 30 min Easy. | Terrain: Rolling / hilly. | Fuel: Full long-ride fuelling routine.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 11 (21-27 Jun 27) - Build ---
+  "2027-06-21": { week: 11, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "50 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-06-22": { week: 11, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,600 m", details: "Workout: 300 m Easy -> 4 x 300 m CSS / Threshold (40 sec rest) -> 7 x 100 m Endurance (20 sec) -> 400 m Easy. | Effort: CSS / Threshold on the 300s.", rpe: "Pool CSS work" },
+  ]},
+  "2027-06-24": { week: 11, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "130 min", details: "Workout: 20 min Easy -> 3 x 15 min at Ironman Race Pace with 5 min Easy between reps -> 55 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks. | Terrain: Flat / gently rolling.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-06-25": { week: 11, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Endurance Swim", duration: "3,400 m", details: "Workout: 400 m Easy -> 5 x 500 m Endurance (40 sec rest) -> 500 m Easy / Endurance. | Effort: Endurance.", rpe: "Pool endurance" },
+  ]},
+  "2027-06-26": { week: 11, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "4:15 hrs", details: "Workout: 30 min Easy -> 195 min Endurance HR -> 30 min Easy. | Terrain: Rolling / hilly. | Fuel: Practise exact race nutrition products where practical.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 12 (28 Jun-04 Jul 27) - Build ---
+  "2027-06-28": { week: 12, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "50 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-06-29": { week: 12, phase: "Build", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "2,700 m", details: "Workout: 300 m Easy -> 5 x 300 m CSS / Threshold (40 sec rest) -> 6 x 100 m Endurance (20 sec) -> 300 m Easy. | Effort: CSS / Threshold on the 300s.", rpe: "Pool CSS work" },
+  ]},
+  "2027-07-01": { week: 12, phase: "Build", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long Aerobic Run", duration: "140 min", details: "Workout: 140 min continuous Easy / Endurance. | Pace: Endurance / Long. | Terrain: Flat to gently rolling.", rpe: "Endurance" },
+  ]},
+  "2027-07-02": { week: 12, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "2,500 m", details: "Workout: 300 m Easy settle -> 1,900 m continuous Endurance -> 300 m Easy / controlled. | Environment: Open water. | Effort: Easy / Endurance. | Skills: Sighting, relaxed breathing and straight-line swimming.", rpe: "Sea or lake reintroduction" },
+  ]},
+  "2027-07-03": { week: 12, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Endurance Bike", duration: "4:30 hrs", details: "Workout: 30 min Easy -> 210 min Endurance HR -> 30 min Easy. | Terrain: Rolling / hilly. | Fuel: Race-style fuelling and hydration throughout.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 13 (05-11 Jul 27) - Recovery ---
+  "2027-07-05": { week: 13, phase: "Recovery", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-07-06": { week: 13, phase: "Recovery", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Controlled Swim", duration: "2,000 m", details: "Workout: 300 m Easy -> 8 x 100 m Endurance (20 sec) -> 6 x 100 m Easy (20 sec) -> 300 m Easy. | Effort: Easy / Endurance; controlled throughout.", rpe: "Pool" },
+  ]},
+  "2027-07-08": { week: 13, phase: "Recovery", sessions: [
+    { day: "Thu", discipline: "Run", session: "Controlled Aerobic Run", duration: "100 min", details: "Workout: 15 min Easy -> 70 min Endurance -> 15 min Easy. | Pace: Endurance / Long.", rpe: "Endurance" },
+  ]},
+  "2027-07-09": { week: 13, phase: "Recovery", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "2,400 m", details: "Workout: 300 m Easy settle -> 1,800 m continuous Easy / Endurance -> 300 m Easy. | Environment: Open water if practical. | Skills: Sighting and relaxed rhythm.", rpe: "Controlled endurance" },
+  ]},
+  "2027-07-10": { week: 13, phase: "Recovery", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Controlled Endurance Bike", duration: "3:00 hrs", details: "Workout: 20 min Easy -> 140 min Endurance HR -> 20 min Easy. | Terrain: Flat / rolling. | Fuel: Normal long-ride fuelling; finish with plenty left.", rpe: "Endurance HR" },
+  ]},
+
+  // --- Week 14 (12-18 Jul 27) - Specific ---
+  "2027-07-12": { week: 14, phase: "Specific", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-07-13": { week: 14, phase: "Specific", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality / Endurance Swim", duration: "2,800 m", details: "Workout: 400 m Easy -> 4 x 300 m CSS / Threshold (40 sec rest) -> 4 x 200 m Endurance (30 sec) -> 400 m Easy. | Effort: CSS / Threshold then Endurance.", rpe: "Pool" },
+  ]},
+  "2027-07-15": { week: 14, phase: "Specific", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "145 min", details: "Workout: 20 min Easy -> 3 x 20 min at Ironman Race Pace with 5 min Easy between reps -> 55 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks. | Terrain: Flat / race-specific.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-07-16": { week: 14, phase: "Specific", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "2,500 m", details: "Workout: 300 m Easy settle -> 1,900 m continuous Endurance / Ironman Race Effort -> 300 m Easy. | Environment: Open water. | Skills: Sighting, relaxed breathing and straight-line swimming.", rpe: "Sea or lake" },
+  ]},
+  "2027-07-17": { week: 14, phase: "Specific", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Brick Bike", duration: "4:45 hrs", details: "Workout: 30 min Endurance -> 2 x 45 min at Ironman Race HR with 15 min Easy between reps -> 150 min Endurance HR. | Terrain: Race-profile style where practical. | Fuel: Full race-fuelling practice.", rpe: "Endurance / Ironman Race HR" },
+    { day: "Sat", discipline: "Run", session: "Brick Run", duration: "20 min", details: "Workout: 20 min Easy immediately off the bike. | Terrain: Flat; focus on settling quickly.", rpe: "Easy" },
+  ]},
+
+  // --- Week 15 (19-25 Jul 27) - Specific ---
+  "2027-07-19": { week: 15, phase: "Specific", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-07-20": { week: 15, phase: "Specific", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality / Endurance Swim", duration: "2,800 m", details: "Workout: 400 m Easy -> 3 x 400 m CSS / Threshold (45 sec rest) -> 4 x 200 m Endurance (30 sec) -> 400 m Easy. | Effort: CSS / Threshold then Endurance.", rpe: "Pool" },
+  ]},
+  "2027-07-22": { week: 15, phase: "Specific", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "150 min", details: "Workout: 20 min Easy -> 2 x 25 min at Ironman Race Pace with 5 min Easy between reps -> 75 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-07-23": { week: 15, phase: "Specific", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "2,800 m", details: "Workout: 300 m Easy settle -> 2,200 m continuous Endurance / Ironman Race Effort -> 300 m Easy. | Environment: Open water. | Skills: Sighting, pacing and uninterrupted rhythm.", rpe: "Sea or lake" },
+  ]},
+  "2027-07-24": { week: 15, phase: "Specific", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Brick Bike", duration: "5:00 hrs", details: "Workout: 30 min Endurance -> 3 x 40 min at Ironman Race HR with 10 min Easy between reps -> 130 min Endurance HR. | Terrain: Race-profile style. | Fuel: Full planned race nutrition and hydration.", rpe: "Endurance / Ironman Race HR" },
+    { day: "Sat", discipline: "Run", session: "Brick Run", duration: "30 min", details: "Workout: 10 min Easy -> 20 min at Ironman Race Pace. | Terrain: Flat / race-specific.", rpe: "Controlled" },
+  ]},
+
+  // --- Week 16 (26 Jul-01 Aug 27) - Specific ---
+  "2027-07-26": { week: 16, phase: "Specific", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "50 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-07-27": { week: 16, phase: "Specific", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Quality Swim", duration: "3,000 m", details: "Workout: 400 m Easy -> 5 x 300 m CSS / Threshold (40 sec rest) -> 7 x 100 m Endurance (20 sec) -> 400 m Easy. | Effort: CSS / Threshold then Endurance.", rpe: "Pool" },
+  ]},
+  "2027-07-29": { week: 16, phase: "Specific", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "155 min", details: "Workout: 20 min Easy -> 3 x 20 min at Ironman Race Pace with 5 min Easy between reps -> 65 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-07-30": { week: 16, phase: "Specific", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "3,000 m", details: "Workout: 300 m Easy settle -> 2,400 m continuous Endurance with 3 x 10 min at Ironman Race Effort embedded -> 300 m Easy. | Environment: Open water. | Skills: Sighting and holding form as effort changes.", rpe: "Lake / sea endurance" },
+  ]},
+  "2027-07-31": { week: 16, phase: "Specific", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Long Brick Bike", duration: "5:15 hrs", details: "Workout: 30 min Endurance -> 2 x 60 min at Ironman Race HR with 15 min Easy between reps -> 150 min Endurance HR. | Terrain: Race-profile style. | Fuel: Full race-fuelling practice.", rpe: "Endurance / Ironman Race HR" },
+    { day: "Sat", discipline: "Run", session: "Brick Run", duration: "45 min", details: "Workout: 10 min Easy -> 30 min Endurance / Ironman Race Pace -> 5 min Easy. | Terrain: Flat / race-specific.", rpe: "Controlled" },
+  ]},
+
+  // --- Week 17 (02-08 Aug 27) - Recovery ---
+  "2027-08-02": { week: 17, phase: "Recovery", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-08-03": { week: 17, phase: "Recovery", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Controlled Swim", duration: "2,200 m", details: "Workout: 300 m Easy -> 6 x 100 m CSS / Threshold (25 sec rest) -> 10 x 100 m Endurance (20 sec) -> 300 m Easy. | Effort: Controlled quality; finish fresh.", rpe: "Pool" },
+  ]},
+  "2027-08-05": { week: 17, phase: "Recovery", sessions: [
+    { day: "Thu", discipline: "Run", session: "Controlled Aerobic Run", duration: "110 min", details: "Workout: 20 min Easy -> 70 min Endurance -> 20 min Easy. | Pace: Endurance / Long.", rpe: "Endurance" },
+  ]},
+  "2027-08-06": { week: 17, phase: "Recovery", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Recovery Swim", duration: "2,500 m", details: "Workout: 300 m Easy settle -> 1,900 m continuous Easy / Endurance -> 300 m Easy. | Environment: Open water if practical. | Skills: Relaxed sighting and rhythm.", rpe: "Controlled" },
+  ]},
+  "2027-08-07": { week: 17, phase: "Recovery", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Reduced Endurance Bike", duration: "3:30 hrs", details: "Workout: 3:30 hrs continuous Easy / Endurance HR. | Terrain: Flat / rolling; reduced volume. | Fuel: Normal long-ride fuelling.", rpe: "Easy / Endurance HR" },
+  ]},
+
+  // --- Week 18 (09-15 Aug 27) - Peak ---
+  "2027-08-09": { week: 18, phase: "Peak", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-08-10": { week: 18, phase: "Peak", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Race-Specific Swim", duration: "3,000 m", details: "Workout: 400 m Easy -> 3 x 600 m at Ironman Race Effort (45 sec rest) -> 4 x 100 m CSS / Threshold (25 sec) -> 400 m Easy. | Effort: Ironman Race Effort then CSS / Threshold.", rpe: "Pool" },
+  ]},
+  "2027-08-12": { week: 18, phase: "Peak", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "160 min", details: "Workout: 20 min Easy -> 2 x 30 min at Ironman Race Pace with 10 min Easy between reps -> 70 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks. | Terrain: Flat / race-specific.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-08-13": { week: 18, phase: "Peak", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "3,400 m", details: "Workout: 400 m Easy settle -> 2,600 m continuous Endurance / Ironman Race Effort -> 400 m Easy. | Environment: Open water. | Skills: Sighting, pacing and sustained rhythm.", rpe: "Race-specific endurance" },
+  ]},
+  "2027-08-14": { week: 18, phase: "Peak", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Peak Brick Bike", duration: "5:45 hrs", details: "Workout: 30 min Endurance -> 3 x 50 min at Ironman Race HR with 10 min Easy between reps -> 145 min Endurance HR. | Terrain: Best available race-profile simulation. | Fuel: Full planned race nutrition, hydration, kit and timing.", rpe: "Endurance / Ironman Race HR" },
+    { day: "Sat", discipline: "Run", session: "Brick Run", duration: "45 min", details: "Workout: 10 min Easy -> 30 min at Ironman Race Pace -> 5 min Easy. | Terrain: Flat / race-specific.", rpe: "Race-specific" },
+  ]},
+
+  // --- Week 19 (16-22 Aug 27) - Peak ---
+  "2027-08-16": { week: 19, phase: "Peak", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "45 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-08-17": { week: 19, phase: "Peak", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Race-Specific Swim", duration: "3,000 m", details: "Workout: 400 m Easy -> 4 x 500 m at Ironman Race Effort (45 sec rest) -> 200 m Endurance -> 400 m Easy. | Effort: Ironman Race Effort; hold an even pace across all 500s.", rpe: "Pool" },
+  ]},
+  "2027-08-19": { week: 19, phase: "Peak", sessions: [
+    { day: "Thu", discipline: "Run", session: "Long / IM-Specific Run", duration: "120 min", details: "Workout: 20 min Easy -> 2 x 20 min at Ironman Race Pace with 5 min Easy between reps -> 55 min Easy / Endurance. | Pace: Ironman Race Pace on the blocks. | Terrain: Flat / race-specific.", rpe: "Race-pace blocks" },
+  ]},
+  "2027-08-20": { week: 19, phase: "Peak", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "3,800 m", details: "Workout: 3,800 m continuous race-specific swim; no planned stops. | Environment: Open water if safe and practical; otherwise pool. | Effort: Controlled Ironman Race Effort. | Skills: Race-start control, sighting and uninterrupted rhythm.", rpe: "Full-distance rehearsal" },
+  ]},
+  "2027-08-21": { week: 19, phase: "Peak", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Peak Brick Bike", duration: "6:30 hrs", details: "Workout: 45 min Endurance -> 4 x 45 min at Ironman Race HR with 10 min Easy between reps -> 135 min Endurance HR. | Terrain: Best available race-specific rehearsal; keep climbs controlled. | Fuel: Full planned race nutrition, hydration, kit and timing.", rpe: "Full race-specific rehearsal" },
+    { day: "Sat", discipline: "Run", session: "Brick Run", duration: "60 min", details: "Workout: 15 min Easy -> 40 min at Ironman Race Pace -> 5 min Easy. | Terrain: Flat / race-specific; finish controlled, not depleted.", rpe: "Race-specific" },
+  ]},
+
+  // --- Week 20 (23-29 Aug 27) - Taper/Race ---
+  "2027-08-23": { week: 20, phase: "Taper / Race", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "35 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-08-24": { week: 20, phase: "Taper / Race", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Controlled Swim", duration: "2,000 m", details: "Workout: 300 m Easy -> 6 x 100 m CSS / Threshold (25 sec rest) -> 8 x 100 m Endurance (20 sec) -> 300 m Easy. | Effort: Controlled CSS / Threshold; finish fresh.", rpe: "Pool sharpening" },
+  ]},
+  "2027-08-26": { week: 20, phase: "Taper / Race", sessions: [
+    { day: "Thu", discipline: "Run", session: "Controlled / Sharpening Run", duration: "75 min", details: "Workout: 15 min Easy -> 3 x 8 min at Ironman Race Pace with 2 min Easy between reps -> 32 min Easy. | Pace: Ironman Race Pace on the blocks.", rpe: "Ironman pace" },
+  ]},
+  "2027-08-27": { week: 20, phase: "Taper / Race", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "2,200 m", details: "Workout: 300 m Easy settle -> 1,600 m Endurance / Ironman Race Effort -> 300 m Easy. | Environment: Open water if practical. | Skills: Sighting and relaxed race rhythm.", rpe: "Controlled" },
+  ]},
+  "2027-08-28": { week: 20, phase: "Taper / Race", sessions: [
+    { day: "Sat", discipline: "Bike", session: "Taper Endurance Bike", duration: "2:30 hrs", details: "Workout: 30 min Easy -> 3 x 20 min at Ironman Race HR with 10 min Easy between reps -> 40 min Easy / Endurance. | Terrain: Flat / rolling. | Fuel: Normal hydration and race-fuelling rehearsal without fatigue chasing.", rpe: "Easy / Endurance HR" },
+  ]},
+
+  // --- Week 21 (30 Aug-05 Sep 27) - Taper/Race. Race day itself (Sun 5 Sep)
+  // is the IRONMAN Belgium event above, not repeated here. ---
+  "2027-08-30": { week: 21, phase: "Taper / Race", sessions: [
+    { day: "Mon", discipline: "Run", session: "Easy Run", duration: "20 min", details: "Easy", rpe: "Easy" },
+  ]},
+  "2027-08-31": { week: 21, phase: "Taper / Race", sessions: [
+    { day: "Tue", discipline: "Swim", session: "Easy Swim", duration: "1,200 m", details: "Workout: 200 m Easy -> 4 x 100 m at Ironman Race Effort (30 sec rest) -> 600 m Easy. | Effort: Short race-effort touches; stay fresh.", rpe: "Pool sharpening" },
+  ]},
+  "2027-09-02": { week: 21, phase: "Taper / Race", sessions: [
+    { day: "Thu", discipline: "Run", session: "Short Sharpening Run", duration: "30 min", details: "Workout: 10 min Easy -> 4 x 2 min at Ironman Race Pace with 1 min Easy between reps -> 9 min Easy. | Pace: Ironman Race Pace on the reps. | Terrain: Flat.", rpe: "Ironman pace" },
+  ]},
+  "2027-09-03": { week: 21, phase: "Taper / Race", sessions: [
+    { day: "Fri", discipline: "Swim", session: "Open-Water Swim", duration: "700 m", details: "Workout: 100 m Easy settle -> 500 m controlled continuous swimming -> 100 m Easy. | Environment: Open water if practical. | Effort: Easy / controlled; familiarisation only.", rpe: "Familiarisation" },
+  ]},
+  "2027-09-04": { week: 21, phase: "Taper / Race", sessions: [
+    { day: "Sat", discipline: "Rest", session: "Rest / Race Prep", duration: "Full rest", details: "", rpe: "equipment, nutrition and transition preparation" },
+  ]},
 };
