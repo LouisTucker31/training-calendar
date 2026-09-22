@@ -155,7 +155,7 @@ function renderTrainingModal(isoDate, block) {
 
   const isLogged = loggedDates.has(isoDate);
   const completeButtonHtml = workout
-    ? `<button type="button" class="modal-complete-btn" data-complete-date="${esc(isoDate)}">${isLogged ? "Marked as complete" : "Mark as complete"}</button>`
+    ? `<button type="button" class="modal-complete-btn${isLogged ? " is-logged" : ""}" data-complete-date="${esc(isoDate)}">${isLogged ? "Marked as complete" : "Mark as complete"}</button>`
     : "";
 
   return `
