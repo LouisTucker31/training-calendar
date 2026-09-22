@@ -15,7 +15,7 @@ EVENTS.forEach(ev => {
   eventsByDate[ev.date].push({ ...ev, ...palette });
 });
 
-// colorIndex isn't set by hand in data.js — it's looked up here from the
+// colorIndex isn't set by hand in data.js - it's looked up here from the
 // linked event, so a block can never drift out of sync with its event's
 // colour (e.g. after a recolour).
 const TRAINING_BLOCKS = TRAINING_BLOCKS_RAW.map(block => {
@@ -50,7 +50,7 @@ function formatLongDate(isoDate) {
 
 // Which training week `endIso` falls in, counting from `startIso` as
 // week 1. Uses whole elapsed days (floored), not a rounded average, so
-// every day in the same 7-day span reports the same week number —
+// every day in the same 7-day span reports the same week number -
 // Math.round previously bumped anything past the midpoint of week 1
 // straight to "week 2".
 function weeksBetween(startIso, endIso) {
@@ -112,7 +112,7 @@ function renderTrainingModal(isoDate, block) {
   const workout = WORKOUTS[isoDate];
 
   const weekLine = workout
-    ? `Week ${workout.week} of ${totalWeeks} — ${workout.phase}`
+    ? `Week ${workout.week} of ${totalWeeks} (${workout.phase})`
     : `Week ${currentWeek} of ${totalWeeks}`;
 
   const sessionsHtml = workout
@@ -120,7 +120,7 @@ function renderTrainingModal(isoDate, block) {
     : "";
 
   return `
-    <h2 class="modal-title">${esc(eventName)} — Training</h2>
+    <h2 class="modal-title">${esc(eventName)} Training</h2>
     <p class="modal-date">${esc(formatLongDate(isoDate))}</p>
     <div class="modal-fields">
       ${fieldHtml("Week", weekLine)}
@@ -354,7 +354,7 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
 
   if (isFillerTrial) {
     // The final row's real dates get their own bottom edge back
-    // (since the grid no longer draws one along its full width) —
+    // (since the grid no longer draws one along its full width) -
     // the blank filler cells in that same row don't.
     Array.from(daysDiv.children).slice(-7).forEach(cell => {
       if (!cell.classList.contains("empty-blank") && !cell.classList.contains("empty-edge")) {

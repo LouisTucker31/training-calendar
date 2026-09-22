@@ -5,7 +5,7 @@
   --line: #c7cad0;
   --line-strong: #b9bdc4;
   --today-ring: #2f5d8a;
-  /* Rendered height of .range-header — used below to size .month so
+  /* Rendered height of .range-header - used below to size .month so
      ~3.5 months fit per mobile screen. Named so the relationship is
      obvious if the header's own padding/font-size ever changes. */
   --header-height: 62px;
@@ -130,7 +130,7 @@ body {
   border-left: none;
 }
 
-/* The grid's own outer bottom/right edges are dropped — the top edge
+/* The grid's own outer bottom/right edges are dropped - the top edge
    (the weekday header's own bottom border) is untouched. Real dates in
    the last column get their right edge back individually, since
    filler cells there shouldn't have one. */
@@ -147,7 +147,7 @@ body {
   border-bottom: 1px solid var(--line);
 }
 
-/* The weekday header divs each draw their own bottom border already —
+/* The weekday header divs each draw their own bottom border already -
    the ones sitting above a blank leading filler cell
    don't get one. */
 .weekdays div.blank-heading {
@@ -155,7 +155,7 @@ body {
 }
 
 /* On mobile, .month draws its own bottom border as the divider between
-   stacked months — that line was still showing up under July's last
+   stacked months - that line was still showing up under July's last
    row even after .days' own border-bottom was dropped above. */
 .month.trial-no-divider {
   border-bottom: none;
@@ -302,14 +302,14 @@ body {
 }
 
 /* Also reused, unchanged, as the wrapper around a set of discipline
-   blocks — same flex/gap rhythm as the outer field list. */
+   blocks - same flex/gap rhythm as the outer field list. */
 .modal-fields {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Divider between multiple events landing on the same day (rare —
+/* Divider between multiple events landing on the same day (rare -
    most days have at most one). */
 .modal-event-divider {
   border-top: 1px solid var(--line-strong);

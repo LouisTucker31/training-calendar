@@ -1,10 +1,10 @@
 // Add events here as { date: "YYYY-MM-DD", name: "Event name", colorIndex }.
-// colorIndex picks the palette entry below — pick indices so that any two
+// colorIndex picks the palette entry below - pick indices so that any two
 // chronologically back-to-back training blocks don't land on similar hues.
-// Each event has a disciplines[] array (one entry per leg — swim/bike/run
+// Each event has a disciplines[] array (one entry per leg - swim/bike/run
 // etc, however many the event has), plus an overall location. Every
 // discipline entry can carry a type (e.g. lake/flat), distance, target
-// duration and target average pace — shown in the day popup. Left blank
+// duration and target average pace - shown in the day popup. Left blank
 // for now where details aren't confirmed yet.
 const EVENTS = [
   {
@@ -48,7 +48,7 @@ const EVENTS = [
   },
 ];
 
-// Subtle, professional palette — background tint + matching dot/text shade.
+// Subtle, professional palette - background tint + matching dot/text shade.
 const PALETTE = [
   { bg: "#d7e2ef", dot: "#4a7ab5", text: "#355d8f" }, // 0 blue
   { bg: "#eed8e5", dot: "#b34d88", text: "#8a3f68" }, // 1 pink
@@ -64,7 +64,7 @@ const PALETTE = [
 // Training blocks: every day from start to end is tinted with the same
 // colour as the event it builds towards, at low opacity. The event's
 // own day keeps its own distinct (stronger) event colour separately.
-// colorIndex isn't set by hand here — it's looked up from the linked
+// colorIndex isn't set by hand here - it's looked up from the linked
 // event in script.js, so a block can never drift out of sync with its
 // event's colour (e.g. after a recolour). In date order: blue -> pink ->
 // purple -> green -> red, so no two consecutive blocks share a similar
@@ -84,7 +84,7 @@ const TRAINING_BLOCKS_RAW = [
 // Day-by-day workouts for training-block days that have a specific planned
 // session (as opposed to the generic "Week X of Y" popup shown when no
 // entry exists here). Keyed by ISO date; each entry's sessions[] holds one
-// object per workout that day — most days have one, brick days (e.g. bike
+// object per workout that day - most days have one, brick days (e.g. bike
 // straight into a run) have two, shown stacked in the popup in order.
 const WORKOUTS = {
   // --- Dorney Olympic block: Week 1 (06-12 Jul 26) ---
@@ -278,7 +278,7 @@ const WORKOUTS = {
     { day: "Sat", discipline: "Run", session: "Brick Run", duration: "15 min", details: "Straight off bike; settle into Olympic effort", rpe: "Controlled race effort" },
   ]},
 
-  // --- Week 12 (21-27 Sep 26) — Taper/Race. Race day itself (Sat 26 Sep)
+  // --- Week 12 (21-27 Sep 26) - Taper/Race. Race day itself (Sat 26 Sep)
   // is the Dorney Olympic event above, not repeated here. ---
   "2026-09-21": { week: 12, phase: "Taper / Race", sessions: [
     { day: "Mon", discipline: "Run", session: "Easy Run", duration: "20 min", details: "Very easy jog", rpe: "Easy" },
