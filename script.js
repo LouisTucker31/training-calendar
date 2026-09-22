@@ -87,11 +87,26 @@ function fieldHtml(label, value) {
   return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value${hasValue ? "" : " is-empty"}">${shown}</span></div>`;
 }
 
+// True only for http:/https: URLs. esc() escapes HTML special characters
+// (<, >, ", &) but doesn't validate the URL scheme - a value like
+// "javascript:alert(1)" has none of those characters, so it would pass
+// through esc() unchanged and execute if rendered into an href. This data
+// comes from Supabase, not a hardcoded constant, so it's treated as
+// untrusted input rather than assumed safe.
+function isSafeHttpUrl(url) {
+  try {
+    const parsed = new URL(String(url), window.location.href);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 // Like fieldHtml, but when a URL is present it renders as a clickable link
 // using linkLabel as the shortened display text (falling back to the raw
 // URL if no label was given).
 function linkFieldHtml(label, url, linkLabel) {
-  const hasValue = url && String(url).trim().length > 0;
+  const hasValue = url && String(url).trim().length > 0 && isSafeHttpUrl(url);
   if (!hasValue) {
     return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value is-empty">Not specified</span></div>`;
   }
