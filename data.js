@@ -10,6 +10,7 @@ const EVENTS = [
   {
     date: "2026-09-26", name: "Dorney Olympic", colorIndex: 0, // blue
     location: "Dorney Lake, Windsor",
+    garminEpicLink: "",
     disciplines: [
       { discipline: "Swim", type: "Lake", distance: "1.5km", duration: "40:00-45:00", pace: "2:40-3:00/100m" },
       { discipline: "Bike", type: "Flat", distance: "40km", duration: "1:15:00-1:30:00", pace: "26.7-31 km/h" },
@@ -19,6 +20,7 @@ const EVENTS = [
   {
     date: "2026-11-15", name: "Bristol Half", colorIndex: 1, // pink
     location: "Bristol, Somerset",
+    garminEpicLink: "",
     disciplines: [
       { discipline: "Run", type: "Hilly", distance: "21.1km", duration: "2:00:00-2:06:36", pace: "5:41-6:00/km" },
     ],
@@ -26,6 +28,7 @@ const EVENTS = [
   {
     date: "2027-01-16", name: "5km Swim", colorIndex: 4, // purple
     location: "TBC (outdoor?)",
+    garminEpicLink: "",
     disciplines: [
       { discipline: "Swim", type: "Pool", distance: "5,000m", duration: "2:15:00-2:30:00", pace: "2:42-3:00/100m" },
     ],
@@ -33,6 +36,7 @@ const EVENTS = [
   {
     date: "2027-04-03", name: "Jurassic Century", colorIndex: 2, // green
     location: "Exeter to Poole",
+    garminEpicLink: "",
     disciplines: [
       { discipline: "Bike", type: "Hilly", distance: "180km", duration: "8:00:00-9:00:00", pace: "20-22.5 km/h" },
     ],
@@ -40,6 +44,7 @@ const EVENTS = [
   {
     date: "2027-09-05", name: "IRONMAN Belgium", colorIndex: 8, // red
     location: "Knokke-Heist, Belgium",
+    garminEpicLink: "",
     disciplines: [
       { discipline: "Swim", type: "River", distance: "3.8km", duration: "1:41:00-1:54:00", pace: "2:40-3:00/100m" },
       { discipline: "Bike", type: "Flat", distance: "180km", duration: "7:30:00-8:00:00", pace: "22.5-24 km/h" },

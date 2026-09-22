@@ -192,6 +192,7 @@ function renderEventModal(ev) {
     <p class="modal-date">${esc(formatLongDate(ev.date))}</p>
     <div class="modal-fields">
       ${fieldHtml("Location", ev.location)}
+      ${fieldHtml("Garmin Epic Link", ev.garminEpicLink)}
       <div class="modal-fields">
         ${disciplines.map(disciplineHtml).join("")}
       </div>
