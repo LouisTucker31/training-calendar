@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>One-time Supabase import</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+  button { padding: 10px 18px; font-size: 15px; cursor: pointer; }
+  pre { background: #f4f4f4; padding: 12px; white-space: pre-wrap; word-break: break-word; }
+  .ok { color: #2a7a2a; }
+  .err { color: #b3261e; }
+</style>
+</head>
+<body>
+<h1>One-time import: data.js -&gt; Supabase</h1>
+<p>Reads EVENTS, TRAINING_BLOCKS_RAW and WORKOUTS from data.js (already loaded on this page) and upserts them into the training_events / training_event_blocks / training_workouts tables. Safe to run more than once - every write is an upsert keyed by date.</p>
+<button id="run">Run import</button>
+<pre id="log"></pre>
+
+<script src="data.js"></script>
+<script>
+  const SUPABASE_URL = "https://vumsggojkacntpzhprqh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXNnZ29qa2FjbnRwemhwcnFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MTcwMzMsImV4cCI6MjEwMzk5MzAzM30.6GOt0pXy2hi_sQcIMmrCeb_0UF9_tKJQqmvj6iSGWTU";
+
+  const logEl = document.getElementById("log");
+  function log(msg, cls) {
+    const line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = msg;
+    logEl.appendChild(line);
+  }
+
+  async function upsert(table, rows) {
+    if (!rows.length) return;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Prefer": "resolution=merge-duplicates",
+      },
+      body: JSON.stringify(rows),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${table}: ${res.status} ${text}`);
+    }
+  }
+
+  document.getElementById("run").addEventListener("click", async () => {
+    logEl.textContent = "";
+    try {
+      // training_events
+      const eventRows = EVENTS.map(ev => ({
+        date: ev.date,
+        name: ev.name,
+        color_index: ev.colorIndex,
+        location: ev.location || null,
+        website: ev.website || null,
+        garmin_epic_link: ev.garminEpicLink || null,
+        garmin_epic_link_label: ev.garminEpicLinkLabel || null,
+        disciplines: ev.disciplines || [],
+      }));
+      await upsert("training_events", eventRows);
+      log(`training_events: upserted ${eventRows.length} rows`, "ok");
+
+      // training_event_blocks
+      const blockRows = TRAINING_BLOCKS_RAW.map(b => ({
+        event_date: b.eventDate,
+        start_date: b.start,
+        end_date: b.end,
+      }));
+      await upsert("training_event_blocks", blockRows);
+      log(`training_event_blocks: upserted ${blockRows.length} rows`, "ok");
+
+      // training_workouts
+      const workoutRows = Object.keys(WORKOUTS).map(date => {
+        const w = WORKOUTS[date];
+        return {
+          date,
+          week: w.week,
+          phase: w.phase,
+          sessions: w.sessions || [],
+        };
+      });
+      await upsert("training_workouts", workoutRows);
+      log(`training_workouts: upserted ${workoutRows.length} rows`, "ok");
+
+      log("Import complete.", "ok");
+    } catch (err) {
+      log(`Failed: ${err.message}`, "err");
+    }
+  });
+</script>
+</body>
+</html>
