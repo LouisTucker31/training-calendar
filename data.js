@@ -431,6 +431,54 @@ const WORKOUTS = {
     { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "900 m", details: "200 m Easy / Recovery WU; 4 x 100 m CSS / Threshold (30 sec rest; controlled); 300 m Easy / Recovery CD", rpe: "RPE 5-6/10" },
   ]},
 
+  // --- Jurassic Century block: Week 1 (25-31 Jan 27) ---
+  "2027-01-29": { week: 1, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Endurance Ride", duration: "2:00 hrs", details: "Endurance; easy return ride, comfortable throughout", rpe: "RPE 4/10" },
+  ]},
+
+  // --- Week 2 (01-07 Feb 27) - Base ---
+  "2027-02-05": { week: 2, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Endurance Ride", duration: "2:30 hrs", details: "Endurance; smooth, conservative pacing", rpe: "RPE 4/10" },
+  ]},
+
+  // --- Week 3 (08-14 Feb 27) - Base ---
+  "2027-02-12": { week: 3, phase: "Base", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Endurance Ride", duration: "3:00 hrs", details: "Endurance; begin consistent fuelling and hydration practice", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 4 (15-21 Feb 27) - Recovery ---
+  "2027-02-19": { week: 4, phase: "Recovery", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Recovery Ride", duration: "1:30 hrs", details: "Easy / Recovery; mostly flat, low fatigue, finish fresh", rpe: "RPE 2-3/10" },
+  ]},
+
+  // --- Week 5 (22-28 Feb 27) - Build ---
+  "2027-02-26": { week: 5, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Long Endurance Ride", duration: "4:00 hrs", details: "Endurance; use hillier terrain and keep climbs controlled", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 6 (01-07 Mar 27) - Build ---
+  "2027-03-05": { week: 6, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Long Endurance Ride", duration: "4:30 hrs", details: "Endurance; event-like climbing, avoid attacking hills", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 7 (08-14 Mar 27) - no session given in the plan for this week. ---
+
+  // --- Week 8 (15-21 Mar 27) - Build ---
+  "2027-03-19": { week: 8, phase: "Build", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Long Endurance Ride", duration: "5:00 hrs", details: "Endurance; full fuelling and hydration rehearsal", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 9 (22-28 Mar 27) - Peak ---
+  "2027-03-26": { week: 9, phase: "Peak", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Peak Endurance Ride", duration: "6:00 hrs", details: "Endurance; event-like terrain with full kit, fuelling and hydration rehearsal", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 10 (29 Mar-04 Apr 27) - Taper/Challenge. Race day itself
+  // (Sat 3 Apr) is the Jurassic Century event above, not repeated here. ---
+  "2027-04-02": { week: 10, phase: "Taper", sessions: [
+    { day: "Fri", discipline: "Bike", session: "Taper Ride", duration: "3:00 hrs", details: "Easy / Endurance; keep the legs moving without accumulating fatigue", rpe: "RPE 3-4/10" },
+  ]},
+
   // --- IRONMAN Belgium block: Week 1 (12-18 Apr 27) ---
   "2027-04-12": { week: 1, phase: "Base", sessions: [
     { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
