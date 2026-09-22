@@ -2,9 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>2026–27 Training Event Calendar</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+
+<!-- iOS ignores the manifest for home-screen install behaviour, so these
+     are required separately for it to launch full-screen with its own
+     icon instead of as a bookmarked Safari tab. -->
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training Cal">
+<meta name="theme-color" content="#1c1e21">
 </head>
 <body>
 
@@ -28,5 +39,16 @@
 
 <script src="data.js"></script>
 <script src="script.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {
+        // Registration failing (e.g. served over plain http, or the file
+        // 404s on a host that doesn't preserve it) shouldn't break the
+        // page - the app still works fully online without it.
+      });
+    });
+  }
+</script>
 </body>
 </html>
