@@ -12,7 +12,7 @@
   /* Roughly the today-pill's own height plus a gap above it, so the page's
      bottom padding (below) can reserve room for it without hardcoding the
      number twice. */
-  --today-pill-clearance: 84px;
+  --today-pill-clearance: 100px;
 }
 
 * { box-sizing: border-box; }
@@ -614,7 +614,7 @@ body {
 .today-pill {
   position: fixed;
   left: 50%;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(36px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: min(310px, calc(100vw - 32px));
   height: 56px;
@@ -625,7 +625,7 @@ body {
   border: none;
   border-radius: 999px;
   font: inherit;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
@@ -633,14 +633,14 @@ body {
 
   /* Plain fallback (no blur) for browsers without backdrop-filter, so
      text stays readable even if the glass effect doesn't render. */
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(185, 189, 196, 0.5); /* --line-strong at low opacity */
   box-shadow: 0 10px 30px rgba(28, 30, 33, 0.12);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .today-pill {
-    background: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.22);
     backdrop-filter: blur(28px) saturate(200%);
     -webkit-backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.55);
