@@ -2,29 +2,33 @@
 // colorIndex picks the palette entry below - pick indices so that any two
 // chronologically back-to-back training blocks don't land on similar hues.
 // Each event has a disciplines[] array (one entry per leg - swim/bike/run
-// etc, however many the event has), plus an overall location. Every
-// discipline entry can carry a type (e.g. lake/flat), distance, target
-// duration and target average pace - shown in the day popup. Left blank
-// for now where details aren't confirmed yet.
+// etc, however many the event has), plus an overall location and website.
+// Every discipline entry can carry a type (e.g. lake/flat), surface (e.g.
+// tarmac/mixed), elevation, distance, target duration and target average
+// pace. Only type/distance/duration/pace are currently shown in the day
+// popup - website/surface/elevation are stored for future use and aren't
+// rendered anywhere yet. Left blank for now where details aren't confirmed.
 const EVENTS = [
   {
     date: "2026-09-26", name: "Dorney Olympic", colorIndex: 0, // blue
     location: "Dorney Lake, Windsor",
+    website: "https://www.dorneytriathlon.com/",
     garminEpicLink: "https://connect.garmin.com/app/epic/f695c782-210c-4902-8d87-7cc8c40c49fe",
     garminEpicLinkLabel: "Dorney Olympic Epic",
     disciplines: [
       { discipline: "Swim", type: "Lake", distance: "1.5km", duration: "40:00-45:00", pace: "2:40-3:00/100m" },
-      { discipline: "Bike", type: "Flat", distance: "40km", duration: "1:15:00-1:30:00", pace: "26.7-31 km/h" },
-      { discipline: "Run", type: "Flat", distance: "10km", duration: "55:00-1:00:00", pace: "5:30-6:00/km" },
+      { discipline: "Bike", type: "Flat", surface: "Tarmac", elevation: "80 m", distance: "40km", duration: "1:15:00-1:30:00", pace: "26.7-31 km/h" },
+      { discipline: "Run", type: "Flat", surface: "Tarmac", elevation: "0 m", distance: "10km", duration: "55:00-1:00:00", pace: "5:30-6:00/km" },
     ],
   },
   {
     date: "2026-11-15", name: "Bristol Half", colorIndex: 1, // pink
     location: "Bristol, Somerset",
+    website: "https://www.mo-running.com/bristol",
     garminEpicLink: "https://connect.garmin.com/app/epic/1f25310e-61ee-4440-a994-bdb0ba9edd9a",
     garminEpicLinkLabel: "Bristol Half Epic",
     disciplines: [
-      { discipline: "Run", type: "Hilly", distance: "21.1km", duration: "2:00:00-2:06:36", pace: "5:41-6:00/km" },
+      { discipline: "Run", type: "Hilly", surface: "Mixed", elevation: "82 m", distance: "21.1km", duration: "2:00:00-2:06:36", pace: "5:41-6:00/km" },
     ],
   },
   {
@@ -42,17 +46,18 @@ const EVENTS = [
     garminEpicLink: "https://connect.garmin.com/app/epic/2d593de2-56f8-4877-a5d5-69830b74ec32",
     garminEpicLinkLabel: "Jurassic Century Epic",
     disciplines: [
-      { discipline: "Bike", type: "Hilly", distance: "180km", duration: "8:00:00-9:00:00", pace: "20-22.5 km/h" },
+      { discipline: "Bike", type: "Hilly", surface: "Tarmac", elevation: "2,350 m", distance: "180km", duration: "8:00:00-9:00:00", pace: "20-22.5 km/h" },
     ],
   },
   {
     date: "2027-09-05", name: "IRONMAN Belgium", colorIndex: 8, // red
     location: "Knokke-Heist, Belgium",
+    website: "https://www.ironman.com/races/im-knokke-heist",
     garminEpicLink: "",
     disciplines: [
       { discipline: "Swim", type: "River", distance: "3.8km", duration: "1:41:00-1:54:00", pace: "2:40-3:00/100m" },
-      { discipline: "Bike", type: "Flat", distance: "180km", duration: "7:30:00-8:00:00", pace: "22.5-24 km/h" },
-      { discipline: "Run", type: "Flat", distance: "42.2km", duration: "4:15:00-5:00:00", pace: "6:00-7:00/km" },
+      { discipline: "Bike", type: "Flat", surface: "Tarmac", elevation: "Flat (TBC)", distance: "180km", duration: "7:30:00-8:00:00", pace: "22.5-24 km/h" },
+      { discipline: "Run", type: "Flat", surface: "Tarmac", elevation: "Flat (TBC)", distance: "42.2km", duration: "4:15:00-5:00:00", pace: "6:00-7:00/km" },
     ],
   },
 ];
