@@ -78,17 +78,42 @@ function renderBlankModal() {
   return `<p class="modal-empty-note">Nothing scheduled on this day.</p>`;
 }
 
+function workoutSessionHtml(s) {
+  return `
+    <div class="modal-discipline">
+      <div class="modal-discipline-name">${esc(s.day ? `${s.day} — ${s.discipline}` : (s.discipline || "Workout"))}</div>
+      <div class="modal-discipline-grid">
+        ${fieldHtml("Session", s.session)}
+        ${fieldHtml("Duration / Distance", s.duration)}
+        ${fieldHtml("Set / Details", s.details)}
+        ${fieldHtml("Effort (RPE)", s.rpe)}
+      </div>
+    </div>
+  `;
+}
+
 function renderTrainingModal(isoDate, block) {
   const ev = EVENTS.find(e => e.date === block.eventDate);
   const eventName = ev ? ev.name : "Event";
   const totalWeeks = weeksBetween(block.start, block.end);
   const currentWeek = weeksBetween(block.start, isoDate);
+  const workout = WORKOUTS[isoDate];
+
+  const weekLine = workout
+    ? `Week ${workout.week} of ${totalWeeks} — ${workout.phase}`
+    : `Week ${currentWeek} of ${totalWeeks}`;
+
+  const sessionsHtml = workout
+    ? `<div class="modal-fields">${workout.sessions.map(workoutSessionHtml).join("")}</div>`
+    : "";
+
   return `
     <h2 class="modal-title">${esc(eventName)} — Training</h2>
     <p class="modal-date">${esc(formatLongDate(isoDate))}</p>
     <div class="modal-fields">
       ${fieldHtml("Event day", formatLongDate(block.eventDate))}
-      ${fieldHtml("Week", `Week ${currentWeek} of ${totalWeeks}`)}
+      ${fieldHtml("Week", weekLine)}
+      ${sessionsHtml}
     </div>
   `;
 }
