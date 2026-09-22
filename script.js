@@ -259,6 +259,7 @@ function openModal(html, label, cell) {
   lastFocused = document.activeElement;
   modalCard.focus();
   lockBodyScroll();
+  todayPill.hidden = true;
 
   if (selectedCell) selectedCell.classList.remove("selected");
   selectedCell = cell || null;
@@ -303,6 +304,7 @@ function closeModal() {
   if (selectedCell) selectedCell.classList.remove("selected");
   selectedCell = null;
   unlockBodyScroll();
+  updateTodayPill();
 }
 
 modalCloseBtn.addEventListener("click", closeModal);
@@ -481,6 +483,7 @@ function openEventList() {
   eventListLastFocused = document.activeElement;
   eventListPanel.focus();
   lockBodyScroll();
+  todayPill.hidden = true;
 }
 
 function closeEventList() {
@@ -489,6 +492,7 @@ function closeEventList() {
   if (eventListLastFocused && typeof eventListLastFocused.focus === "function") eventListLastFocused.focus();
   eventListLastFocused = null;
   unlockBodyScroll();
+  updateTodayPill();
 }
 
 eventListTrigger.addEventListener("click", () => {
