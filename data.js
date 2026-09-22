@@ -70,24 +70,18 @@ const PALETTE = [
   { bg: "#f2dad8", dot: "#c4574f", text: "#96382f" }, // 8 red
 ];
 
-// Training blocks: every day from start to end is tinted with the same
-// colour as the event it builds towards, at low opacity. The event's
-// own day keeps its own distinct (stronger) event colour separately.
-// colorIndex isn't set by hand here - it's looked up from the linked
-// event in script.js, so a block can never drift out of sync with its
-// event's colour (e.g. after a recolour). In date order: blue -> pink ->
-// purple -> green -> red, so no two consecutive blocks share a similar
-// hue.
-// strongColorForFuture: upcoming (not-yet-passed) training days use the
-// same solid colour as their event day itself, rather than the usual
-// subtle tint; once a training day is in the past it drops back to the
-// subtle tint (the score-through already marks it as done).
+// Training blocks: every day from start to end belongs to the event it
+// builds towards (used to find that day's workout, phase and week number).
+// colorIndex isn't set by hand here - it's looked up from the linked event
+// in script.js, so a block can never drift out of sync with its event's
+// colour (e.g. after a recolour). In date order: blue -> pink -> purple ->
+// green -> red, so no two consecutive blocks share a similar hue.
 const TRAINING_BLOCKS_RAW = [
-  { start: "2026-07-06", end: "2026-09-25", eventDate: "2026-09-26", strongColorForFuture: true }, // Dorney Olympic
-  { start: "2026-10-05", end: "2026-11-14", eventDate: "2026-11-15", strongColorForFuture: true }, // Bristol Half
-  { start: "2026-11-23", end: "2027-01-15", eventDate: "2027-01-16", strongColorForFuture: true }, // 5km Swim
-  { start: "2027-01-25", end: "2027-04-02", eventDate: "2027-04-03", strongColorForFuture: true }, // Jurassic Century, 10 weeks
-  { start: "2027-04-12", end: "2027-09-04", eventDate: "2027-09-05", strongColorForFuture: true }, // IRONMAN Belgium, 21 weeks
+  { start: "2026-07-06", end: "2026-09-25", eventDate: "2026-09-26" }, // Dorney Olympic
+  { start: "2026-10-05", end: "2026-11-14", eventDate: "2026-11-15" }, // Bristol Half
+  { start: "2026-11-23", end: "2027-01-15", eventDate: "2027-01-16" }, // 5km Swim
+  { start: "2027-01-25", end: "2027-04-02", eventDate: "2027-04-03" }, // Jurassic Century, 10 weeks
+  { start: "2027-04-12", end: "2027-09-04", eventDate: "2027-09-05" }, // IRONMAN Belgium, 21 weeks
 ];
 
 // Day-by-day workouts for training-block days that have a specific planned
