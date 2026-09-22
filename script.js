@@ -78,14 +78,26 @@ function renderBlankModal() {
   return `<p class="modal-empty-note">Nothing scheduled on this day.</p>`;
 }
 
+// Splits a "2 x 150 m endurance + 3 x 50 m speed" style set into separate
+// lines, one per "+"-joined part, so each component of a set reads as its
+// own row rather than one run-on string.
+function setDetailsHtml(details) {
+  const hasValue = details && String(details).trim().length > 0;
+  if (!hasValue) {
+    return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value is-empty">Not added yet</span></div>`;
+  }
+  const parts = String(details).split("+").map(p => p.trim()).filter(Boolean);
+  const linesHtml = parts.map(p => esc(p)).join("<br>");
+  return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value">${linesHtml}</span></div>`;
+}
+
 function workoutSessionHtml(s) {
   return `
     <div class="modal-discipline">
-      <div class="modal-discipline-name">${esc(s.day ? `${s.day} — ${s.discipline}` : (s.discipline || "Workout"))}</div>
       <div class="modal-discipline-grid">
         ${fieldHtml("Session", s.session)}
         ${fieldHtml("Duration / Distance", s.duration)}
-        ${fieldHtml("Set / Details", s.details)}
+        ${setDetailsHtml(s.details)}
         ${fieldHtml("Effort (RPE)", s.rpe)}
       </div>
     </div>
@@ -111,7 +123,6 @@ function renderTrainingModal(isoDate, block) {
     <h2 class="modal-title">${esc(eventName)} — Training</h2>
     <p class="modal-date">${esc(formatLongDate(isoDate))}</p>
     <div class="modal-fields">
-      ${fieldHtml("Event day", formatLongDate(block.eventDate))}
       ${fieldHtml("Week", weekLine)}
       ${sessionsHtml}
     </div>
