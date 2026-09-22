@@ -23,12 +23,6 @@ const TRAINING_BLOCKS = TRAINING_BLOCKS_RAW.map(block => {
   return { ...block, colorIndex: ev ? ev.colorIndex : 0 };
 });
 
-function hexToRgba(hex, alpha) {
-  const n = parseInt(hex.slice(1), 16);
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 // Logged-workout state lives only in this browser (localStorage), keyed by
 // ISO date. Wrapped in try/catch since storage access can throw (private
 // browsing, blocked site data) and a missing "logged" mark should never
@@ -300,7 +294,6 @@ function handleDayClick(isoDate) {
 }
 
 const today = new Date();
-const todayIso = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
 const container = document.getElementById("calendar");
 
 let y = startYear, m = startMonth;
@@ -391,10 +384,6 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
       const block = trainingBlockFor(isoDate);
       if (block) {
         const palette = PALETTE[block.colorIndex % PALETTE.length];
-        const isUpcoming = isoDate >= todayIso;
-        el.style.background = (block.strongColorForFuture && isUpcoming)
-          ? palette.bg
-          : hexToRgba(palette.dot, 0.11);
         const ev = EVENTS.find(e => e.date === block.eventDate);
         ariaLabel += `: ${ev ? ev.name : "event"} training`;
 
