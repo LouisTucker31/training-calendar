@@ -10,7 +10,8 @@ const EVENTS = [
   {
     date: "2026-09-26", name: "Dorney Olympic", colorIndex: 0, // blue
     location: "Dorney Lake, Windsor",
-    garminEpicLink: "",
+    garminEpicLink: "https://connect.garmin.com/app/epic/f695c782-210c-4902-8d87-7cc8c40c49fe",
+    garminEpicLinkLabel: "Dorney Olympic Epic",
     disciplines: [
       { discipline: "Swim", type: "Lake", distance: "1.5km", duration: "40:00-45:00", pace: "2:40-3:00/100m" },
       { discipline: "Bike", type: "Flat", distance: "40km", duration: "1:15:00-1:30:00", pace: "26.7-31 km/h" },

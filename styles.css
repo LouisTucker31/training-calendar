@@ -386,6 +386,10 @@ body {
   font-style: italic;
 }
 
+.modal-field-value a {
+  color: var(--today-ring);
+}
+
 .modal-complete-btn {
   align-self: flex-start;
   margin-top: 4px;

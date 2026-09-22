@@ -103,6 +103,18 @@ function fieldHtml(label, value) {
   return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value${hasValue ? "" : " is-empty"}">${shown}</span></div>`;
 }
 
+// Like fieldHtml, but when a URL is present it renders as a clickable link
+// using linkLabel as the shortened display text (falling back to the raw
+// URL if no label was given).
+function linkFieldHtml(label, url, linkLabel) {
+  const hasValue = url && String(url).trim().length > 0;
+  if (!hasValue) {
+    return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value is-empty">Not added yet</span></div>`;
+  }
+  const shownText = linkLabel && String(linkLabel).trim().length > 0 ? linkLabel : url;
+  return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(shownText)}</a></span></div>`;
+}
+
 function renderBlankModal() {
   return `<p class="modal-empty-note">Nothing scheduled on this day.</p>`;
 }
@@ -192,7 +204,7 @@ function renderEventModal(ev) {
     <p class="modal-date">${esc(formatLongDate(ev.date))}</p>
     <div class="modal-fields">
       ${fieldHtml("Location", ev.location)}
-      ${fieldHtml("Garmin Epic Link", ev.garminEpicLink)}
+      ${linkFieldHtml("Garmin Epic Link", ev.garminEpicLink, ev.garminEpicLinkLabel)}
       <div class="modal-fields">
         ${disciplines.map(disciplineHtml).join("")}
       </div>
