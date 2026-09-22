@@ -276,7 +276,8 @@ body {
 @media print {
   .month { break-inside: avoid; page-break-after: always; }
   /* A modal left open shouldn't appear in a printout. */
-  .modal-overlay { display: none !important; }
+  .modal-overlay,
+  .event-list-overlay { display: none !important; }
 }
 
 .days .cell:not(.empty):not(.empty-blank):not(.empty-edge) {
@@ -448,6 +449,7 @@ body {
 .event-list-overlay {
   position: fixed;
   inset: 0;
+  background: rgba(28, 30, 33, 0.4);
   z-index: 1000;
 }
 
