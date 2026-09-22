@@ -477,6 +477,16 @@ eventListBody.addEventListener("click", e => {
   if (!head) return;
   const body = document.getElementById(head.getAttribute("aria-controls"));
   const expanded = head.getAttribute("aria-expanded") === "true";
+
+  // Only one row open at a time - collapse every other expanded row
+  // before toggling the one that was clicked.
+  eventListBody.querySelectorAll(".event-list-row-head[aria-expanded=\"true\"]").forEach(otherHead => {
+    if (otherHead === head) return;
+    otherHead.setAttribute("aria-expanded", "false");
+    const otherBody = document.getElementById(otherHead.getAttribute("aria-controls"));
+    if (otherBody) otherBody.hidden = true;
+  });
+
   head.setAttribute("aria-expanded", String(!expanded));
   if (body) body.hidden = expanded;
 });
