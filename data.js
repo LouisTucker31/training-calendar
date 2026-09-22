@@ -345,6 +345,92 @@ const WORKOUTS = {
     { day: "Tue", discipline: "Run", session: "Shakeout Run", duration: "20 min total", details: "Easy / Recovery; 4 x 20 sec relaxed strides embedded in final 10 min", rpe: "Easy" },
   ]},
 
+  // --- 5km Swim block: Week 1 (23-29 Nov 26) ---
+  "2026-11-23": { week: 1, phase: "Return", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,000 m", details: "200 m Easy / Recovery WU; 8 x 50 m technique (25 m Catch-Up / 25 m Easy, 20 sec rest); 300 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-11-25": { week: 1, phase: "Return", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,100 m", details: "200 m Easy / Recovery WU; 6 x 100 m CSS / Threshold (20-30 sec rest); 300 m Easy / Recovery CD", rpe: "RPE 6-7/10" },
+  ]},
+  "2026-11-28": { week: 1, phase: "Return", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "1,400 m", details: "continuous at Endurance effort; settle into a relaxed, sustainable rhythm", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 2 (30 Nov-06 Dec 26) - Build ---
+  "2026-11-30": { week: 2, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,100 m", details: "200 m Easy / Recovery WU; 8 x 50 m technique (4 Catch-Up, 4 Fingertip-Drag, 20 sec rest); 400 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-12-02": { week: 2, phase: "Build", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,300 m", details: "200 m Easy / Recovery WU; 8 x 100 m CSS / Threshold (20-30 sec rest); 300 m Easy / Recovery CD", rpe: "RPE 6-7/10" },
+  ]},
+  "2026-12-05": { week: 2, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "1,800 m", details: "continuous at Endurance effort; smooth, even pacing", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 3 (07-13 Dec 26) - Build ---
+  "2026-12-07": { week: 3, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,200 m", details: "200 m Easy / Recovery WU; 8 x 50 m technique (alternate Catch-Up / Fingertip-Drag, 20 sec rest); 500 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-12-09": { week: 3, phase: "Build", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,400 m", details: "300 m Easy / Recovery WU; 4 x 200 m CSS / Threshold (25-30 sec rest); 300 m Easy / Recovery CD", rpe: "RPE 6-7/10" },
+  ]},
+  "2026-12-12": { week: 3, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "2,200 m", details: "continuous at Endurance effort; maintain technique as distance increases", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 4 (14-20 Dec 26) - Consolidation ---
+  "2026-12-14": { week: 4, phase: "Consolidation", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,000 m", details: "200 m Easy / Recovery WU; 6 x 50 m Catch-Up (20 sec rest); 400 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-12-16": { week: 4, phase: "Consolidation", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,200 m", details: "200 m Easy / Recovery WU; 6 x 100 m CSS / Threshold (20-30 sec rest); 200 m Endurance; 200 m Easy / Recovery CD", rpe: "RPE 6/10" },
+  ]},
+  "2026-12-19": { week: 4, phase: "Consolidation", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "2,400 m", details: "continuous at Endurance effort; controlled and sustainable throughout", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 5 (21-27 Dec 26) - Build ---
+  "2026-12-21": { week: 5, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,300 m", details: "250 m Easy / Recovery WU; 8 x 50 m technique (alternate Catch-Up / Fingertip-Drag, 20 sec rest); 500 m Endurance; 150 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-12-23": { week: 5, phase: "Build", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,500 m", details: "300 m Easy / Recovery WU; 5 x 200 m CSS / Threshold (25-30 sec rest); 200 m Easy / Recovery CD", rpe: "RPE 6-7/10" },
+  ]},
+  "2026-12-26": { week: 5, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "2,800 m", details: "continuous at Endurance effort; maintain technique as distance increases", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 6 (28 Dec 26-03 Jan 27) - Build ---
+  "2026-12-28": { week: 6, phase: "Build", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,400 m", details: "200 m Easy / Recovery WU; 6 x 50 m Catch-Up (20 sec rest); 400 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2026-12-30": { week: 6, phase: "Build", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,600 m", details: "300 m Easy / Recovery WU; 4 x 200 m CSS / Threshold (25-30 sec rest); 3 x 100 m Endurance; 200 m Easy / Recovery CD", rpe: "RPE 6/10" },
+  ]},
+  "2027-01-02": { week: 6, phase: "Build", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "3,200 m", details: "continuous at Endurance effort; controlled and sustainable throughout", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 7 (04-10 Jan 27) - Peak ---
+  "2027-01-04": { week: 7, phase: "Peak", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "1,300 m", details: "200 m Easy / Recovery WU; 8 x 50 m technique (alternate Catch-Up / Fingertip-Drag; 20 sec rest); 600 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 3-4/10" },
+  ]},
+  "2027-01-06": { week: 7, phase: "Peak", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "1,500 m", details: "300 m Easy / Recovery WU; 4 x 200 m CSS / Threshold (25-30 sec rest); 4 x 50 m CSS / Threshold (controlled; 20 sec rest); 200 m Easy / Recovery CD", rpe: "RPE 6-7/10" },
+  ]},
+  "2027-01-09": { week: 7, phase: "Peak", sessions: [
+    { day: "Sat", discipline: "Swim", session: "Endurance Swim", duration: "3,800 m", details: "continuous at Endurance effort; prove full Ironman swim distance continuously", rpe: "RPE 4-5/10" },
+  ]},
+
+  // --- Week 8 (11-16 Jan 27) - Taper/Challenge. Race day itself (Sat 16 Jan)
+  // is the 5km Swim event above, not repeated here. ---
+  "2027-01-11": { week: 8, phase: "Taper / Challenge", sessions: [
+    { day: "Mon", discipline: "Swim", session: "Easy / Technique Swim", duration: "900 m", details: "200 m Easy / Recovery WU; 4 x 50 m Catch-Up (20 sec rest); 400 m Endurance; 100 m Easy / Recovery CD", rpe: "RPE 2-3/10" },
+  ]},
+  "2027-01-13": { week: 8, phase: "Taper / Challenge", sessions: [
+    { day: "Wed", discipline: "Swim", session: "Quality Swim", duration: "900 m", details: "200 m Easy / Recovery WU; 4 x 100 m CSS / Threshold (30 sec rest; controlled); 300 m Easy / Recovery CD", rpe: "RPE 5-6/10" },
+  ]},
+
   // --- IRONMAN Belgium block: Week 1 (12-18 Apr 27) ---
   "2027-04-12": { week: 1, phase: "Base", sessions: [
     { day: "Mon", discipline: "Run", session: "Easy Run", duration: "40 min", details: "Easy", rpe: "Easy" },
