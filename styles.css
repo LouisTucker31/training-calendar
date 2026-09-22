@@ -12,7 +12,7 @@
   /* Roughly the today-pill's own height plus a gap above it, so the page's
      bottom padding (below) can reserve room for it without hardcoding the
      number twice. */
-  --today-pill-clearance: 64px;
+  --today-pill-clearance: 84px;
 }
 
 * { box-sizing: border-box; }
@@ -602,24 +602,30 @@ body {
 }
 
 /* Floating "today" pill: persistent, fixed to the bottom of the viewport
-   (thumb-reach zone on mobile), above the safe area. Frosted-glass look
-   built from the app's own light palette rather than a generic dark glass
-   effect - border/shadow tints sit close to --line-strong at low opacity
-   so it reads as part of the same design system. */
+   (thumb-reach zone on mobile), above the safe area. Fixed width/height
+   regardless of its text content, so it never resizes as today's content
+   changes day to day - sized generously enough for the longest label this
+   app produces (a brick-day name or "Session - duration" pair), with
+   ellipsis as a safety net for anything longer still. Liquid-glass look:
+   more transparent and more blurred than a typical frosted panel, with an
+   inner highlight along the top edge for that glass-refraction feel,
+   built from the app's own light palette rather than a generic dark
+   glass effect. */
 .today-pill {
   position: fixed;
   left: 50%;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
-  max-width: calc(100vw - 32px);
+  width: min(310px, calc(100vw - 32px));
+  height: 56px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  justify-content: center;
+  padding: 0 24px;
   border: none;
   border-radius: 999px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
@@ -627,19 +633,22 @@ body {
 
   /* Plain fallback (no blur) for browsers without backdrop-filter, so
      text stays readable even if the glass effect doesn't render. */
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(185, 189, 196, 0.5); /* --line-strong at low opacity */
-  box-shadow: 0 8px 24px rgba(28, 30, 33, 0.1);
+  box-shadow: 0 10px 30px rgba(28, 30, 33, 0.12);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .today-pill {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow:
-      0 8px 24px rgba(28, 30, 33, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      0 10px 30px rgba(28, 30, 33, 0.14),
+      0 1px 1px rgba(28, 30, 33, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      inset 0 0 0 1px rgba(185, 189, 196, 0.18);
   }
 }
 

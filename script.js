@@ -534,12 +534,13 @@ function updateTodayPill() {
 }
 
 // Scrolls the current month's header into view. Used both on initial load
-// (no highlight - just positioning) and from the pill's click handler
-// (with the pulse highlight, since that's an explicit "take me there").
+// (instant - just positioning, withPulse false) and from the pill's click
+// handler (smooth-scrolled and pulsed, since that's an explicit "take me
+// there" the user should be able to see happen).
 function scrollToCurrentMonth(withPulse) {
   const monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
   if (!monthEl) return;
-  monthEl.scrollIntoView({ block: "start" });
+  monthEl.scrollIntoView({ block: "start", behavior: withPulse ? "smooth" : "auto" });
 
   if (withPulse) {
     const cell = container.querySelector(`.cell[data-date="${todayIso}"]`);
