@@ -80,7 +80,10 @@ function esc(str) {
 
 function fieldHtml(label, value) {
   const hasValue = value && String(value).trim().length > 0;
-  const shown = hasValue ? esc(value) : "Not added yet";
+  // "Not specified" rather than "Not added yet" - the latter implies the
+  // value is definitely coming later, which isn't true for every field
+  // this renders (some genuinely don't apply to a given event/discipline).
+  const shown = hasValue ? esc(value) : "Not specified";
   return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value${hasValue ? "" : " is-empty"}">${shown}</span></div>`;
 }
 
@@ -90,7 +93,7 @@ function fieldHtml(label, value) {
 function linkFieldHtml(label, url, linkLabel) {
   const hasValue = url && String(url).trim().length > 0;
   if (!hasValue) {
-    return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value is-empty">Not added yet</span></div>`;
+    return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value is-empty">Not specified</span></div>`;
   }
   const shownText = linkLabel && String(linkLabel).trim().length > 0 ? linkLabel : url;
   return `<div><span class="modal-field-label">${esc(label)}</span><span class="modal-field-value"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(shownText)}</a></span></div>`;
@@ -109,7 +112,7 @@ function renderBlankModal() {
 function setDetailsHtml(details) {
   const hasValue = details && String(details).trim().length > 0;
   if (!hasValue) {
-    return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value is-empty">Not added yet</span></div>`;
+    return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value is-empty">Not specified</span></div>`;
   }
   const text = String(details);
   const separator = text.includes("|") ? "|" : "+";
@@ -170,7 +173,7 @@ function disciplineHtml(d) {
         ${fieldHtml("Type", d.type)}
         ${fieldHtml("Distance", d.distance)}
         ${fieldHtml("Duration", d.duration)}
-        ${fieldHtml("Avg pace", d.pace)}
+        ${fieldHtml("Average pace", d.pace)}
       </div>
     </div>
   `;
@@ -388,8 +391,11 @@ function eventListRowHtml(ev, index) {
   const elevationParts = disciplines
     .filter(d => d.elevation && String(d.elevation).trim().length > 0)
     .map(d => `${d.discipline || "Discipline"}: ${d.elevation}`);
+  // One discipline per line rather than a "|"-joined string, matching how
+  // setDetailsHtml already splits multi-part values elsewhere in this
+  // file - a raw delimiter character isn't something a reader should see.
   const elevationHtml = elevationParts.length
-    ? fieldHtml("Elevation", elevationParts.join(" | "))
+    ? `<div><span class="modal-field-label">Elevation</span><span class="modal-field-value">${elevationParts.map(p => esc(p)).join("<br>")}</span></div>`
     : "";
 
   return `
