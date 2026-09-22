@@ -251,11 +251,11 @@ body {
   .modal-overlay { display: none !important; }
 }
 
-.days .cell:not(.empty) {
+.days .cell:not(.empty):not(.empty-blank):not(.empty-edge) {
   cursor: pointer;
 }
 
-.days .cell:not(.empty):hover,
+.days .cell:not(.empty):not(.empty-blank):not(.empty-edge):hover,
 .days .cell.selected {
   box-shadow: inset 0 0 0 1.25px var(--line-strong);
 }
