@@ -316,6 +316,7 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain;
   z-index: 1000;
+  animation: modal-overlay-in 0.2s ease-out;
 }
 
 .modal-overlay[hidden] {
@@ -333,6 +334,22 @@ body {
   margin: auto;
   padding: 24px;
   position: relative;
+  animation: modal-card-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* Subtle open animation: backdrop fades in while the card fades and
+   scales up slightly from just below full size, rather than appearing
+   instantly. Replays on every open without any JS involvement, since the
+   "hidden" attribute toggles display:none on and off, and returning from
+   display:none re-triggers a fresh animation each time. */
+@keyframes modal-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-card-in {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-close {
@@ -471,6 +488,7 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain;
   z-index: 1000;
+  animation: modal-overlay-in 0.2s ease-out;
 }
 
 .event-list-overlay[hidden] {
@@ -482,6 +500,7 @@ body {
   border: 1px solid var(--line-strong);
   width: 100%;
   max-width: 420px;
+  animation: modal-card-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
   /* No max-height/overflow of its own - with an expanded row this panel
      can end up taller than the viewport, especially on mobile where
      100vh doesn't reliably match the visible area once the address bar

@@ -567,7 +567,14 @@ todayPill.appendChild(todayPillLabel);
 
 document.body.appendChild(todayPill);
 
-todayPill.addEventListener("click", () => scrollToCurrentMonth(true));
+todayPill.addEventListener("click", () => {
+  scrollToCurrentMonth(true);
+  // Waits for the smooth scroll to settle before opening today's popup,
+  // so the two happen in sequence rather than the modal appearing over a
+  // page that's still mid-scroll. A fixed delay rather than the scrollend
+  // event, which Safari doesn't fire reliably.
+  setTimeout(() => handleDayClick(todayIso), 650);
+});
 
 // Builds the whole month grid. Deferred until after Supabase data has
 // loaded (see init() below) since every cell reads EVENTS/WORKOUTS/
