@@ -30,7 +30,7 @@ body {
 }
 
 .range-header {
-  padding: 18px 4vw 12px;
+  padding: 26px 4vw 12px;
   position: relative;
 }
 
@@ -258,7 +258,7 @@ body {
   }
 
   .range-header {
-    padding: 24px 28px 16px;
+    padding: 32px 28px 16px;
   }
 
   #calendar {
