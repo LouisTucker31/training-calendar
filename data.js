@@ -30,7 +30,8 @@ const EVENTS = [
   {
     date: "2027-01-16", name: "5km Swim", colorIndex: 4, // purple
     location: "TBC (outdoor?)",
-    garminEpicLink: "",
+    garminEpicLink: "https://connect.garmin.com/app/epic/bebe43f6-403e-4884-8d1f-d9e2e5d3d859",
+    garminEpicLinkLabel: "5km Swim Epic",
     disciplines: [
       { discipline: "Swim", type: "Pool", distance: "5,000m", duration: "2:15:00-2:30:00", pace: "2:42-3:00/100m" },
     ],
