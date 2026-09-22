@@ -81,6 +81,10 @@ body {
   border-bottom: 1px solid var(--line);
   display: flex;
   flex-direction: column;
+  /* Stops scrollIntoView (used by the today-pill's tap-through) a little
+     short of the very top of the screen, rather than landing the month
+     name flush against/cut off by the top edge. */
+  scroll-margin-top: calc(16px + env(safe-area-inset-top, 0px));
 }
 
 .month-title {
@@ -670,11 +674,13 @@ body {
 
 /* Tap-through highlight: a brief "look here" pulse on today's cell,
    distinct from the permanent .today box-shadow ring so the two don't
-   read as the same state. Fades out on its own via the animation rather
-   than needing a second class removal round-trip. */
+   read as the same state. Entirely inset (no outer glow spilling past
+   the cell's own border) so it reads as a highlight inside the tile
+   rather than a halo around it. Fades out on its own via the animation
+   rather than needing a second class removal round-trip. */
 @keyframes today-pill-pulse {
-  0% { box-shadow: inset 0 0 0 2px var(--today-ring), 0 0 0 6px rgba(47, 93, 138, 0.18); }
-  100% { box-shadow: inset 0 0 0 2px var(--today-ring), 0 0 0 6px rgba(47, 93, 138, 0); }
+  0% { box-shadow: inset 0 0 0 2px var(--today-ring), inset 0 0 16px rgba(47, 93, 138, 0.28); }
+  100% { box-shadow: inset 0 0 0 2px var(--today-ring), inset 0 0 16px rgba(47, 93, 138, 0); }
 }
 
 .days .cell.pulse {
