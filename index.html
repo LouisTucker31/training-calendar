@@ -43,10 +43,34 @@
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").catch(() => {
+      // updateViaCache: "none" stops the browser HTTP-caching sw.js itself
+      // (GitHub Pages serves it with a 10 min max-age by default), so every
+      // registration check actually re-fetches the current file instead of
+      // silently reusing a stale one - this matters most for an installed
+      // iOS home-screen PWA, which otherwise rarely re-checks on its own.
+      navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
+        // sw.js itself calls self.skipWaiting() on install, so a new
+        // service worker takes over as soon as it's installed rather than
+        // waiting for every old tab to close - that's what triggers the
+        // controllerchange reload below. Explicitly asking for an update
+        // check here means a stale install (e.g. an iOS home-screen PWA
+        // that rarely re-checks on its own) picks up changes on its next
+        // open instead of only whenever the browser feels like checking.
+        reg.update().catch(() => {});
+      }).catch(() => {
         // Registration failing (e.g. served over plain http, or the file
         // 404s on a host that doesn't preserve it) shouldn't break the
         // page - the app still works fully online without it.
+      });
+
+      // Once the new service worker takes control, reload once so the page
+      // is running the code that matches it (avoids a half-updated state
+      // where old JS is still loaded under a new SW).
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloading) return;
+        reloading = true;
+        window.location.reload();
       });
     });
   }
