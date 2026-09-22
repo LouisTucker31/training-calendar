@@ -212,6 +212,22 @@ function renderEventModal(ev) {
   `;
 }
 
+// Shared by both overlays (day modal and event list) so the page behind
+// them can't be scrolled while either is open, on desktop or mobile. A
+// count rather than a plain boolean means it stays correct even if one
+// overlay's open call ever fires while the other is already open.
+let scrollLockCount = 0;
+
+function lockBodyScroll() {
+  scrollLockCount++;
+  document.body.style.overflow = "hidden";
+}
+
+function unlockBodyScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1);
+  if (scrollLockCount === 0) document.body.style.overflow = "";
+}
+
 const modalOverlay = document.createElement("div");
 modalOverlay.className = "modal-overlay";
 modalOverlay.hidden = true;
@@ -243,6 +259,7 @@ function openModal(html, label, cell) {
   modalOverlay.hidden = false;
   lastFocused = document.activeElement;
   modalCard.focus();
+  lockBodyScroll();
 
   if (selectedCell) selectedCell.classList.remove("selected");
   selectedCell = cell || null;
@@ -274,6 +291,7 @@ function closeModal() {
   lastFocused = null;
   if (selectedCell) selectedCell.classList.remove("selected");
   selectedCell = null;
+  unlockBodyScroll();
 }
 
 modalCloseBtn.addEventListener("click", closeModal);
@@ -435,6 +453,7 @@ function openEventList() {
   eventListTrigger.setAttribute("aria-expanded", "true");
   eventListLastFocused = document.activeElement;
   eventListPanel.focus();
+  lockBodyScroll();
 }
 
 function closeEventList() {
@@ -442,6 +461,7 @@ function closeEventList() {
   eventListTrigger.setAttribute("aria-expanded", "false");
   if (eventListLastFocused && typeof eventListLastFocused.focus === "function") eventListLastFocused.focus();
   eventListLastFocused = null;
+  unlockBodyScroll();
 }
 
 eventListTrigger.addEventListener("click", () => {

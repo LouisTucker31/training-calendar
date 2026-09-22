@@ -316,6 +316,7 @@ body {
   max-width: 380px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   position: relative;
 }
@@ -467,6 +468,7 @@ body {
   max-width: 420px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   position: relative;
 }
