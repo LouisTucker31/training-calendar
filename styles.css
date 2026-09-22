@@ -116,6 +116,27 @@ body {
   background: #f7f7f8;
 }
 
+/* Logged-workout marker: a small dot in the corner of any day that has a
+   planned session. Hollow ring = planned but not logged yet; filled solid
+   = logged. Colour is set inline per-cell to match the event's palette
+   dot, so it stays consistent with the rest of that training block. */
+.logged-dot {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dot-color, currentColor);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logged-dot.is-logged {
+  background: var(--dot-color, currentColor);
+}
+
 /* Filler cells lose their grey fill.
    empty-blank also loses its left border, for a filler cell whose left
    neighbour is itself filler (nothing real to visually connect to);

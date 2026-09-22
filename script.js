@@ -29,6 +29,41 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// Logged-workout state lives only in this browser (localStorage), keyed by
+// ISO date. Wrapped in try/catch since storage access can throw (private
+// browsing, blocked site data) and a missing "logged" mark should never
+// break the calendar.
+const LOGGED_STORAGE_KEY = "trainingCalendar.loggedDates";
+
+function loadLoggedDates() {
+  try {
+    const raw = localStorage.getItem(LOGGED_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+const loggedDates = loadLoggedDates();
+
+function saveLoggedDates() {
+  try {
+    localStorage.setItem(LOGGED_STORAGE_KEY, JSON.stringify([...loggedDates]));
+  } catch {
+    // Storage unavailable - logged state just won't persist this session.
+  }
+}
+
+function toggleLogged(isoDate) {
+  if (loggedDates.has(isoDate)) {
+    loggedDates.delete(isoDate);
+  } else {
+    loggedDates.add(isoDate);
+  }
+  saveLoggedDates();
+}
+
 function trainingBlockFor(isoDate) {
   for (const block of TRAINING_BLOCKS) {
     if (isoDate >= block.start && isoDate <= block.end) return block;
@@ -331,6 +366,17 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
           : hexToRgba(palette.dot, 0.11);
         const ev = EVENTS.find(e => e.date === block.eventDate);
         ariaLabel += `: ${ev ? ev.name : "event"} training`;
+
+        if (WORKOUTS[isoDate]) {
+          const isLogged = loggedDates.has(isoDate);
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "logged-dot" + (isLogged ? " is-logged" : "");
+          dot.style.setProperty("--dot-color", palette.dot);
+          dot.setAttribute("aria-pressed", String(isLogged));
+          dot.setAttribute("aria-label", isLogged ? "Mark workout as not logged" : "Mark workout as logged");
+          el.appendChild(dot);
+        }
       }
     }
 
@@ -374,6 +420,21 @@ while (y < endYear || (y === endYear && m <= endMonth)) {
 // Event delegation: one pair of listeners handles every day tile, rather
 // than one per cell.
 container.addEventListener("click", e => {
+  const dot = e.target.closest(".logged-dot");
+  if (dot) {
+    // The dot toggles logged state in place; it must not also open the
+    // day's modal, since it sits inside the same clickable cell.
+    e.stopPropagation();
+    const cell = dot.closest(".cell[data-date]");
+    if (!cell) return;
+    const isoDate = cell.dataset.date;
+    toggleLogged(isoDate);
+    const isLogged = loggedDates.has(isoDate);
+    dot.classList.toggle("is-logged", isLogged);
+    dot.setAttribute("aria-pressed", String(isLogged));
+    dot.setAttribute("aria-label", isLogged ? "Mark workout as not logged" : "Mark workout as logged");
+    return;
+  }
   const cell = e.target.closest(".cell[data-date]");
   if (cell) handleDayClick(cell.dataset.date);
 });
