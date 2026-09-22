@@ -40,6 +40,20 @@ create table training_logged_workouts (
   logged_at timestamptz not null default now()
 );
 
+-- training_pace_benchmarks
+-- Every save inserts a new row rather than updating one in place, so past
+-- benchmark values are preserved as training progresses - the Paces tab
+-- always reads the most recent row (highest set_at) to populate its
+-- inputs, but nothing is ever overwritten or deleted here. No user_id:
+-- this app has no auth, so there's only ever one shared history.
+create table training_pace_benchmarks (
+  id bigint generated always as identity primary key,
+  set_at timestamptz not null default now(),
+  css_pace text,              -- swim CSS pace per 100m, e.g. "1:35"
+  cycling_lthr int,           -- bike LTHR in bpm
+  run_threshold_pace text     -- run threshold pace per km, e.g. "4:30"
+);
+
 -- Row Level Security
 -- Public read+write via the anon key, same trust model as the current
 -- localStorage-only setup: anyone with the page open can view and edit.
@@ -50,6 +64,7 @@ alter table training_events enable row level security;
 alter table training_event_blocks enable row level security;
 alter table training_workouts enable row level security;
 alter table training_logged_workouts enable row level security;
+alter table training_pace_benchmarks enable row level security;
 
 create policy "public read training_events" on training_events for select using (true);
 create policy "public write training_events" on training_events for insert with check (true);
@@ -70,3 +85,8 @@ create policy "public read training_logged_workouts" on training_logged_workouts
 create policy "public write training_logged_workouts" on training_logged_workouts for insert with check (true);
 create policy "public update training_logged_workouts" on training_logged_workouts for update using (true);
 create policy "public delete training_logged_workouts" on training_logged_workouts for delete using (true);
+
+create policy "public read training_pace_benchmarks" on training_pace_benchmarks for select using (true);
+create policy "public write training_pace_benchmarks" on training_pace_benchmarks for insert with check (true);
+create policy "public update training_pace_benchmarks" on training_pace_benchmarks for update using (true);
+create policy "public delete training_pace_benchmarks" on training_pace_benchmarks for delete using (true);
