@@ -302,6 +302,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 1000;
 }
 
@@ -314,9 +316,10 @@ body {
   border: 1px solid var(--line-strong);
   width: 100%;
   max-width: 380px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  /* No max-height/overflow of its own - see the matching comment on
+     .event-list-panel for why: scrolling the overlay instead keeps both
+     ends of taller-than-viewport content reachable on mobile. */
+  margin: auto;
   padding: 24px;
   position: relative;
 }
@@ -454,6 +457,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 1000;
 }
 
@@ -466,9 +471,14 @@ body {
   border: 1px solid var(--line-strong);
   width: 100%;
   max-width: 420px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  /* No max-height/overflow of its own - with an expanded row this panel
+     can end up taller than the viewport, especially on mobile where
+     100vh doesn't reliably match the visible area once the address bar
+     is accounted for. Letting the panel grow to its natural height and
+     scrolling the overlay itself (above) instead keeps both the top and
+     bottom of the content reachable, rather than clipping whichever end
+     sticks out past a fixed max-height. */
+  margin: auto;
   padding: 24px;
   position: relative;
 }
