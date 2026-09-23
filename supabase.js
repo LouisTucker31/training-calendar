@@ -63,9 +63,19 @@ async function loadTrainingData() {
   return { EVENTS, TRAINING_BLOCKS_RAW, WORKOUTS };
 }
 
+// Returns both the Set of logged dates and a date -> logged_at map in one
+// request - the map is used to resolve which pace-benchmark values were
+// current at the moment a same-day workout was marked complete (see
+// resolvePaceBenchmarksFor in script.js).
 async function fetchLoggedDates() {
-  const rows = await supabaseRequest("training_logged_workouts?select=date");
-  return new Set(rows.map(r => r.date));
+  const rows = await supabaseRequest("training_logged_workouts?select=date,logged_at");
+  const dates = new Set();
+  const loggedAtByDate = {};
+  rows.forEach(r => {
+    dates.add(r.date);
+    loggedAtByDate[r.date] = r.logged_at;
+  });
+  return { dates, loggedAtByDate };
 }
 
 async function insertLoggedDate(isoDate) {
@@ -83,10 +93,10 @@ async function deleteLoggedDate(isoDate) {
 }
 
 // Returns the most recent pace-benchmark row (or null if none exist yet),
-// reshaped to camelCase. Every save inserts a new row rather than
-// updating one in place (see insertPaceBenchmarks below), so this is
-// always "the latest values", not "the only values" - past rows are
-// never read back by the app yet, just preserved for later.
+// reshaped to camelCase. Used for the Paces tab's own inputs, which
+// always edit/display the latest values - see fetchPaceBenchmarkHistory
+// below for reading the full history back (used to resolve what applied
+// to a specific past date instead).
 async function fetchLatestPaceBenchmarks() {
   const rows = await supabaseRequest("training_pace_benchmarks?select=*&order=set_at.desc&limit=1");
   if (!rows || rows.length === 0) return null;
@@ -96,6 +106,20 @@ async function fetchLatestPaceBenchmarks() {
     cyclingLthr: r.cycling_lthr ?? null,
     runThresholdPace: r.run_threshold_pace || "",
   };
+}
+
+// The full benchmark history, oldest first, reshaped to camelCase. Used
+// to resolve which values were current as of a given point in time (a
+// workout's date, or the moment it was logged) rather than always
+// applying today's latest - see resolvePaceBenchmarksFor in script.js.
+async function fetchPaceBenchmarkHistory() {
+  const rows = await supabaseRequest("training_pace_benchmarks?select=*&order=set_at.asc");
+  return (rows || []).map(r => ({
+    setAt: r.set_at,
+    cssPace: r.css_pace || "",
+    cyclingLthr: r.cycling_lthr ?? null,
+    runThresholdPace: r.run_threshold_pace || "",
+  }));
 }
 
 // Always an insert, never an update - see the table comment in

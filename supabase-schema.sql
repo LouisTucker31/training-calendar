@@ -42,10 +42,15 @@ create table training_logged_workouts (
 
 -- training_pace_benchmarks
 -- Every save inserts a new row rather than updating one in place, so past
--- benchmark values are preserved as training progresses - the Paces tab
--- always reads the most recent row (highest set_at) to populate its
--- inputs, but nothing is ever overwritten or deleted here. No user_id:
--- this app has no auth, so there's only ever one shared history.
+-- benchmark values are preserved as training progresses. The Paces tab's
+-- own inputs always read the most recent row (highest set_at); the day
+-- popup and day-view rows instead resolve a past or same-day-logged
+-- workout against the full history (set_at compared to the workout's
+-- date/its training_logged_workouts.logged_at), so a later change to
+-- these values never rewrites what an already-past or already-completed
+-- workout showed - see resolvePaceBenchmarksFor in script.js. Nothing is
+-- ever overwritten or deleted here. No user_id: this app has no auth, so
+-- there's only ever one shared history.
 create table training_pace_benchmarks (
   id bigint generated always as identity primary key,
   set_at timestamptz not null default now(),

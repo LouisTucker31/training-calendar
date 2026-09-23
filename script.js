@@ -38,10 +38,27 @@ let TRAINING_BLOCKS = [];
 // never drifts out of sync with what's actually stored.
 let loggedDates = new Set();
 
+// date -> ISO timestamp of when it was logged, mirroring
+// training_logged_workouts.logged_at. Used by resolvePaceBenchmarksFor to
+// freeze a same-day workout's pace zones to whatever was current at the
+// moment it was actually marked complete, rather than today's live
+// values - see that function's own comment for the full rule.
+let loggedAtByDate = {};
+
 async function toggleLogged(isoDate) {
   const wasLogged = loggedDates.has(isoDate);
-  if (wasLogged) loggedDates.delete(isoDate);
-  else loggedDates.add(isoDate);
+  const previousLoggedAt = loggedAtByDate[isoDate];
+
+  if (wasLogged) {
+    loggedDates.delete(isoDate);
+    delete loggedAtByDate[isoDate];
+  } else {
+    loggedDates.add(isoDate);
+    // Optimistic local timestamp, matching the default the database
+    // column itself would assign - close enough for same-session zone
+    // resolution; the next full reload picks up the real value anyway.
+    loggedAtByDate[isoDate] = new Date().toISOString();
+  }
 
   try {
     if (wasLogged) await deleteLoggedDate(isoDate);
@@ -50,8 +67,13 @@ async function toggleLogged(isoDate) {
     // Revert the optimistic update if the write didn't actually happen,
     // so a dropped connection can't silently desync local state from
     // Supabase.
-    if (wasLogged) loggedDates.add(isoDate);
-    else loggedDates.delete(isoDate);
+    if (wasLogged) {
+      loggedDates.add(isoDate);
+      loggedAtByDate[isoDate] = previousLoggedAt;
+    } else {
+      loggedDates.delete(isoDate);
+      delete loggedAtByDate[isoDate];
+    }
     throw err;
   }
 }
@@ -172,11 +194,59 @@ function bikeZoneRange(lthr, percent) {
 // back to the zone name when a segment has no role (e.g. a "Skills:"
 // note that still named a zone in passing).
 
+// Each entry's rangeFor takes the *resolved* benchmarks for a particular
+// date (see resolvePaceBenchmarksFor below), not the live paceBenchmarks
+// global directly - so the same zone table can be evaluated against
+// whatever values were actually current for a given workout.
 const ZONES_BY_DISCIPLINE = {
-  Swim: { zones: SWIM_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset), unit: "/100m" },
-  Bike: { zones: BIKE_ZONES, rangeFor: zone => bikeZoneRange(paceBenchmarks.cyclingLthr, zone.percent), unit: "" },
-  Run: { zones: RUN_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset), unit: "/km" },
+  Swim: { zones: SWIM_ZONES, rangeFor: (zone, benchmarks) => paceZoneRange(benchmarks.cssPace, zone.offset), unit: "/100m" },
+  Bike: { zones: BIKE_ZONES, rangeFor: (zone, benchmarks) => bikeZoneRange(benchmarks.cyclingLthr, zone.percent), unit: "" },
+  Run: { zones: RUN_ZONES, rangeFor: (zone, benchmarks) => paceZoneRange(benchmarks.runThresholdPace, zone.offset), unit: "/km" },
 };
+
+// Full pace-benchmark history, oldest first (as saved), fetched once at
+// startup. paceBenchmarks (the live global) always reflects the latest
+// row and is what the Paces tab edits/displays; this array is what lets
+// a specific past workout resolve to whatever was current *then* instead
+// of always the latest.
+let paceBenchmarkHistory = [];
+
+// Resolves which saved benchmark values apply to a given workout date,
+// per the freeze rule: a workout keeps the values that were live either
+// at the end of its own day, or at the moment it was logged complete,
+// whichever is earlier - so changing today's threshold pace never
+// silently rewrites what a past or already-completed workout prescribed.
+// Concretely:
+//   - isoDate before today: values current by the end of that day.
+//   - isoDate is today and logged: values current at the moment it was
+//     logged (loggedAtByDate), not today's live edits since.
+//   - Otherwise (today and not yet logged, or any future date): the
+//     latest values - these change live as the benchmarks change, which
+//     is the whole point of "not yet locked in".
+function resolvePaceBenchmarksFor(isoDate) {
+  const isPast = isoDate < todayIso;
+  const isTodayLogged = isoDate === todayIso && loggedDates.has(isoDate);
+
+  if (!isPast && !isTodayLogged) return paceBenchmarks;
+  if (paceBenchmarkHistory.length === 0) return paceBenchmarks;
+
+  // "End of that day" as a cutoff timestamp: anything saved on or before
+  // 23:59:59 local time on isoDate counts as current for it.
+  const cutoff = isTodayLogged
+    ? loggedAtByDate[isoDate]
+    : `${isoDate}T23:59:59.999`;
+  const cutoffMs = cutoff ? new Date(cutoff).getTime() : NaN;
+  if (!Number.isFinite(cutoffMs)) return paceBenchmarks;
+
+  // History is oldest-first, so the last row at or before the cutoff is
+  // the one that was current at that point in time.
+  let resolved = null;
+  for (const row of paceBenchmarkHistory) {
+    if (new Date(row.setAt).getTime() > cutoffMs) break;
+    resolved = row;
+  }
+  return resolved || { cssPace: "", cyclingLthr: null, runThresholdPace: "" };
+}
 
 // Returns [{ label, range }, ...], one entry per segment whose
 // pre-computed zone resolves to a range, in segment order (so warm-up
@@ -189,11 +259,14 @@ const ZONES_BY_DISCIPLINE = {
 // rarely the interesting number once a real main-set zone is known.
 // Returns [] if the discipline isn't recognised, there are no segments,
 // or nothing resolved - callers render no Pace section in that case.
-function matchedPaceZones(session) {
+// isoDate picks which saved benchmark values apply, per
+// resolvePaceBenchmarksFor's freeze rule.
+function matchedPaceZones(session, isoDate) {
   const disciplineInfo = ZONES_BY_DISCIPLINE[session.discipline];
   const segments = session.segments;
   if (!disciplineInfo || !Array.isArray(segments) || segments.length === 0) return [];
 
+  const benchmarks = resolvePaceBenchmarksFor(isoDate);
   const zoneByLabel = new Map(disciplineInfo.zones.map(z => [z.label, z]));
   const sessionHasSpecificMatch = segments.some(seg => seg.zone && seg.zone !== "Easy / Recovery" && zoneByLabel.has(seg.zone));
 
@@ -203,7 +276,7 @@ function matchedPaceZones(session) {
     if (seg.zone === "Easy / Recovery" && sessionHasSpecificMatch) return;
     const zone = zoneByLabel.get(seg.zone);
     if (!zone) return;
-    const range = disciplineInfo.rangeFor(zone);
+    const range = disciplineInfo.rangeFor(zone, benchmarks);
     if (!range) return;
     matches.push({ label: seg.role || zone.label, range: `${range}${disciplineInfo.unit}` });
   });
@@ -211,8 +284,8 @@ function matchedPaceZones(session) {
   return matches;
 }
 
-function paceFieldHtml(session) {
-  const matches = matchedPaceZones(session);
+function paceFieldHtml(session, isoDate) {
+  const matches = matchedPaceZones(session, isoDate);
   if (matches.length === 0) return "";
   const line = matches.map(m => `${esc(m.label)}: ${esc(m.range)}`).join(" | ");
   return `<div><span class="modal-field-label">Pace</span><span class="modal-field-value">${line}</span></div>`;
@@ -276,7 +349,7 @@ function setDetailsHtml(details) {
   return `<div><span class="modal-field-label">Set / Details</span><span class="modal-field-value">${linesHtml}</span></div>`;
 }
 
-function workoutSessionHtml(s) {
+function workoutSessionHtml(s, isoDate) {
   return `
     <div class="modal-discipline">
       <div class="modal-discipline-grid">
@@ -284,7 +357,7 @@ function workoutSessionHtml(s) {
         ${fieldHtml("Duration / Distance", s.duration)}
         ${setDetailsHtml(s.details)}
         ${fieldHtml("Effort (RPE)", s.rpe)}
-        ${paceFieldHtml(s)}
+        ${paceFieldHtml(s, isoDate)}
       </div>
     </div>
   `;
@@ -302,7 +375,7 @@ function renderTrainingModal(isoDate, block) {
     : `Week ${currentWeek} of ${totalWeeks}`;
 
   const sessionsHtml = workout
-    ? `<div class="modal-fields">${workout.sessions.map(workoutSessionHtml).join("")}</div>`
+    ? `<div class="modal-fields">${workout.sessions.map(s => workoutSessionHtml(s, isoDate)).join("")}</div>`
     : fieldHtml("Session", "Rest Day");
 
   const isLogged = loggedDates.has(isoDate);
@@ -743,6 +816,14 @@ function renderPacesTab() {
   saveBtn.addEventListener("click", () => {
     saveStatus.textContent = "Saving...";
     insertPaceBenchmarks(paceBenchmarks).then(() => {
+      // Appended locally (history is oldest-first) rather than
+      // refetched, so date-aware resolution for anything rendered after
+      // this save sees it immediately without a reload. setAt is a
+      // local timestamp rather than the server's own - close enough,
+      // since it's only ever compared against other timestamps taken
+      // the same way (workout dates at end-of-day, or logged_at values
+      // that predate this save either way).
+      paceBenchmarkHistory.push({ ...paceBenchmarks, setAt: new Date().toISOString() });
       saveStatus.textContent = "Saved.";
     }).catch(() => {
       saveStatus.textContent = "Couldn't save - check your connection and try again.";
@@ -815,8 +896,9 @@ document.addEventListener("keydown", e => {
 // date, decide what one-line label best represents it (an event takes
 // priority over training, matching handleDayClick's own priority order),
 // and, for a single training session, its first matched pace-zone range
-// if one's available - used only by the day-view row, not the pill,
-// which stays exactly as it read before.
+// if one's available. The pace shown for isoDate always reflects
+// resolvePaceBenchmarksFor's freeze rule, not necessarily today's live
+// benchmark values.
 function dayContent(isoDate) {
   const dayEvents = eventsByDate[isoDate];
   if (dayEvents && dayEvents.length) {
@@ -855,7 +937,7 @@ function dayContent(isoDate) {
 
   const s = workout.sessions[0];
   const parts = [s.session, s.duration].filter(Boolean);
-  const pace = matchedPaceZones(s)[0];
+  const pace = matchedPaceZones(s, isoDate)[0];
   if (pace) parts.push(pace.range);
   return { label: parts.join(" - "), kind: "training", colorIndex: block.colorIndex };
 }
@@ -1266,7 +1348,9 @@ async function init() {
   });
 
   try {
-    loggedDates = await fetchLoggedDates();
+    const logged = await fetchLoggedDates();
+    loggedDates = logged.dates;
+    loggedAtByDate = logged.loggedAtByDate;
   } catch {
     // Logged state just won't be pre-populated this load if this fails -
     // the calendar itself (built from EVENTS/WORKOUTS above) still works.
@@ -1279,6 +1363,14 @@ async function init() {
     // No prior benchmarks (or the fetch failed) - the day popup's Pace
     // section and the Paces tab both just show nothing resolved yet,
     // same as a first-time user with nothing saved.
+  }
+
+  try {
+    paceBenchmarkHistory = await fetchPaceBenchmarkHistory();
+  } catch {
+    // Date-aware pace resolution just falls back to the latest values
+    // for every workout if this fails - same behaviour as before this
+    // feature existed, not a hard failure.
   }
 
   renderCalendar();
