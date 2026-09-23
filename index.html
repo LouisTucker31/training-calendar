@@ -38,17 +38,6 @@
 <div class="range-header">
   <div class="range-header-top">
     <h1>2026–27 Training Event Calendar</h1>
-    <button type="button" id="event-list-trigger" aria-label="Show events and pace settings" aria-haspopup="dialog" aria-expanded="false">
-      <!-- Lucide "menu" icon - kept in sync with the ICONS.menu entry in
-           script.js, which is what every other icon in the app is
-           rendered from; this one has to stay static markup since it's
-           visible before any JS runs. -->
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="4" x2="20" y1="6" y2="6"></line>
-        <line x1="4" x2="20" y1="12" y2="12"></line>
-        <line x1="4" x2="20" y1="18" y2="18"></line>
-      </svg>
-    </button>
   </div>
 </div>
 
@@ -56,11 +45,10 @@
 <div id="day-view" hidden></div>
 
 <!-- Liquid glass "today" toolbar: the left circle toggles month/day view
-     (icon filled in by script.js's setView, matching the ICONS set
-     every other icon in the app uses), the right circle stays
-     decorative (no icon, no function - kept purely for the three-piece
-     glass look), and the centre pill is the app's today button. Hidden
-     by default; script.js reveals it once there's a workout/rest-day
+     and the right circle opens the events/paces settings panel (icons
+     filled in by script.js, matching the ICONS set every other icon in
+     the app uses), the centre pill is the app's today button. Hidden by
+     default; script.js reveals it once there's a workout/rest-day
      summary to show for today, same as the pill this replaces. -->
 <div class="lg-toolbar" id="today-toolbar" role="presentation" hidden>
   <button type="button" class="lg-toolbar__circle lg-surface" id="view-toggle" aria-pressed="false">
@@ -75,10 +63,11 @@
     <span class="today-pill-label" id="today-pill-label"></span>
   </button>
 
-  <div class="lg-toolbar__circle lg-surface" aria-hidden="true">
+  <button type="button" class="lg-toolbar__circle lg-surface" id="event-list-trigger" aria-label="Show events and pace settings" aria-haspopup="dialog" aria-expanded="false">
     <span class="lg-surface__lens" aria-hidden="true"></span>
     <span class="lg-surface__frost" aria-hidden="true"></span>
-  </div>
+    <span class="lg-toolbar__circle-icon" id="event-list-trigger-icon"></span>
+  </button>
 </div>
 
 <script src="data.js"></script>

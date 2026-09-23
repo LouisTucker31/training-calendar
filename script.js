@@ -641,6 +641,7 @@ eventListOverlay.appendChild(eventListPanel);
 document.body.appendChild(eventListOverlay);
 
 const eventListTrigger = document.getElementById("event-list-trigger");
+document.getElementById("event-list-trigger-icon").innerHTML = iconSvg("menu", 20);
 let eventListLastFocused = null;
 
 function switchSettingsTab(tab) {
@@ -863,14 +864,21 @@ function todayPillContent() {
   return dayContent(todayIso);
 }
 
+// The toolbar itself always stays visible (whenever no popup is open) -
+// its left/right circles are the view-toggle and settings buttons, both
+// of which need to stay reachable even on a day with nothing to show
+// (e.g. outside the season's date range). Only the pill's own content
+// and clickability depend on there being something for today.
 function updateTodayPill() {
   const content = todayPillContent();
+  todayPill.hidden = false;
   if (!content) {
-    todayPill.hidden = true;
+    todayPillLabel.textContent = "";
+    todayPillButton.disabled = true;
     return;
   }
   todayPillLabel.textContent = content.label;
-  todayPill.hidden = false;
+  todayPillButton.disabled = false;
 }
 
 // Scrolls the current month's header into view. Used both on initial load

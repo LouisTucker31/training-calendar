@@ -180,16 +180,19 @@
   pointer-events: none;
 }
 
-/* The left circle is the one exception: it's a real button (the
-   month/day view toggle), so it gets pointer events, an icon slot and
-   interactive states back - the right circle stays fully inert. */
-#view-toggle.lg-toolbar__circle {
+/* Both circles are real buttons - the left toggles month/day view, the
+   right opens the events/paces settings panel - so both get pointer
+   events, an icon slot and interactive states back. */
+#view-toggle.lg-toolbar__circle,
+#event-list-trigger.lg-toolbar__circle {
   pointer-events: auto;
   cursor: pointer;
   transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-#view-toggle.lg-toolbar__circle:active { transform: scale(1.1); }
-#view-toggle.lg-toolbar__circle:focus-visible { outline: 2px solid #3480f0; outline-offset: 2px; }
+#view-toggle.lg-toolbar__circle:active,
+#event-list-trigger.lg-toolbar__circle:active { transform: scale(1.1); }
+#view-toggle.lg-toolbar__circle:focus-visible,
+#event-list-trigger.lg-toolbar__circle:focus-visible { outline: 2px solid #3480f0; outline-offset: 2px; }
 
 .lg-toolbar__circle-icon {
   display: grid;
@@ -201,7 +204,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #view-toggle.lg-toolbar__circle { transition: none; }
+  #view-toggle.lg-toolbar__circle,
+  #event-list-trigger.lg-toolbar__circle { transition: none; }
 }
 
 /* Centre pill: the app's own today button, sized and styled like the
@@ -228,6 +232,7 @@
 }
 .lg-toolbar__pill:active { transform: scale(1.03); }
 .lg-toolbar__pill:focus-visible { outline: 2px solid #3480f0; outline-offset: -6px; border-radius: 999px; }
+.lg-toolbar__pill:disabled { cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
   .lg-toolbar__pill { transition: none; }
