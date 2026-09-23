@@ -81,17 +81,6 @@ body {
   background: #f7f7f8;
 }
 
-/* Invisible marker elements at the very start/end of #calendar, watched
-   by an IntersectionObserver so the infinite-scroll controller knows
-   when to generate more months in that direction. grid-column spans both
-   desktop columns so it never occupies a month's own grid slot and never
-   throws off the two-month-per-row pairing; on the mobile single-column
-   flex layout that property is simply unused/harmless. */
-.scroll-sentinel {
-  grid-column: 1 / -1;
-  height: 1px;
-}
-
 .month {
   width: 100%;
   min-height: calc((100vh - var(--header-height)) / 3.5);

@@ -856,21 +856,7 @@ function updateTodayPill() {
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function scrollToCurrentMonth(withPulse) {
-  let monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
-
-  // With infinite scroll, today's month can in principle have been pruned
-  // if the user scrolled a long way off in one direction and then jumped
-  // straight to the pill without scrolling back - rebuild the initial
-  // window around today rather than silently doing nothing.
-  if (!monthEl && renderedStart) {
-    container.querySelectorAll(".month").forEach(el => el.remove());
-    scrollObserver.unobserve(topSentinel);
-    scrollObserver.unobserve(bottomSentinel);
-    topSentinel.remove();
-    bottomSentinel.remove();
-    renderCalendar();
-    monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
-  }
+  const monthEl = container.querySelector(`.month[data-year="${today.getFullYear()}"][data-month="${today.getMonth()}"]`);
   if (!monthEl) return;
 
   monthEl.scrollIntoView({ block: "start", behavior: (withPulse && !prefersReducedMotion) ? "smooth" : "auto" });
@@ -1059,128 +1045,23 @@ function buildMonthEl(y, m) {
   return monthDiv;
 }
 
-// --- Infinite scroll -------------------------------------------------
-// No more fixed startYear/endYear render limit. Months are generated on
-// demand as the user scrolls, both forward and backward, keyed off two
-// IntersectionObserver sentinels sitting just past the first and last
-// rendered month. Rendered months more than RETENTION_MONTHS away from
-// whichever edge the user is scrolling towards are pruned from the DOM
-// (not from the underlying EVENTS/WORKOUTS/TRAINING_BLOCKS data, which
-// was already loaded in full - see loadTrainingData in supabase.js, no
-// date filtering there) so scrolling a long way in one direction doesn't
-// grow the page indefinitely.
-const INITIAL_MONTHS_BEFORE = 2;
-const INITIAL_MONTHS_AFTER = 3;
-const LOAD_BATCH = 3;
-const RETENTION_MONTHS = 18; // total months kept in the DOM before the far edge starts pruning
+// Renders every month from RANGE_START to RANGE_END as plain static DOM
+// - the earlier infinite-scroll version (IntersectionObserver sentinels
+// generating/pruning months on the fly) turned out unreliable in
+// practice (months silently going missing after scrolling), so this
+// reverts to the simple, predictable approach: render the whole range up
+// front. Covers all of 2026 and 2027; widen RANGE_START/RANGE_END here if
+// a later year's data is ever added.
+const RANGE_START = { y: 2026, m: 0 };  // January 2026
+const RANGE_END = { y: 2027, m: 11 };   // December 2027
 
-// { y, m } of the earliest/latest month currently rendered - updated as
-// buildMonthEl/prependMonth/appendMonth run, so the observer always knows
-// where to continue from without re-scanning the DOM.
-let renderedStart = null;
-let renderedEnd = null;
-
-function addMonths(y, m, delta) {
-  const total = y * 12 + m + delta;
-  return { y: Math.floor(total / 12), m: ((total % 12) + 12) % 12 };
-}
-
-function appendMonth() {
-  const next = addMonths(renderedEnd.y, renderedEnd.m, 1);
-  // Must land before bottomSentinel, not after - a plain appendChild
-  // would push past the sentinel and leave it no longer at the true end,
-  // so it would stop being detectable as "user scrolled to the bottom".
-  container.insertBefore(buildMonthEl(next.y, next.m), bottomSentinel);
-  renderedEnd = next;
-}
-
-function prependMonth() {
-  const prev = addMonths(renderedStart.y, renderedStart.m, -1);
-  const el = buildMonthEl(prev.y, prev.m);
-  // Prepending changes scrollHeight above the viewport, which would
-  // otherwise visibly jump the content the user is looking at - capture
-  // the height being inserted and immediately counter-scroll by the same
-  // amount so the visible content doesn't move.
-  const beforeHeight = container.scrollHeight;
-  // Must land after topSentinel, not before it - inserting before
-  // container.firstChild would push the sentinel itself further from the
-  // true top on every call (it's only firstChild the very first time),
-  // so it would stop sitting at the actual start of the list and further
-  // backward scrolling would stop triggering more prepends.
-  container.insertBefore(el, topSentinel.nextSibling);
-  const addedHeight = container.scrollHeight - beforeHeight;
-  window.scrollBy(0, addedHeight);
-  renderedStart = prev;
-}
-
-// Both prune functions count only .month elements (not the two sentinel
-// divs, which always stay put at the very start/end) and only ever touch
-// .month elements too, so pruning can never remove a sentinel itself.
-function pruneFromEnd() {
-  let months = container.querySelectorAll(".month");
-  while (months.length > RETENTION_MONTHS) {
-    const last = months[months.length - 1];
-    container.removeChild(last);
-    renderedEnd = addMonths(renderedEnd.y, renderedEnd.m, -1);
-    months = container.querySelectorAll(".month");
-  }
-}
-
-function pruneFromStart() {
-  let months = container.querySelectorAll(".month");
-  while (months.length > RETENTION_MONTHS) {
-    const first = months[0];
-    const removedHeight = first.getBoundingClientRect().height;
-    container.removeChild(first);
-    // Removing from above the viewport needs the same counter-scroll
-    // treatment as prependMonth, in reverse, so pruning doesn't jump the
-    // content either.
-    window.scrollBy(0, -removedHeight);
-    renderedStart = addMonths(renderedStart.y, renderedStart.m, 1);
-    months = container.querySelectorAll(".month");
-  }
-}
-
-const topSentinel = document.createElement("div");
-topSentinel.className = "scroll-sentinel";
-const bottomSentinel = document.createElement("div");
-bottomSentinel.className = "scroll-sentinel";
-
-const scrollObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    if (entry.target === bottomSentinel) {
-      for (let i = 0; i < LOAD_BATCH; i++) appendMonth();
-      pruneFromStart();
-    } else if (entry.target === topSentinel) {
-      for (let i = 0; i < LOAD_BATCH; i++) prependMonth();
-      pruneFromEnd();
-    }
-  });
-}, { rootMargin: "600px 0px 600px 0px" });
-
-// Renders the initial window around today (not the old fixed July
-// 2026-October 2027 range) and wires up the sentinels. Deferred until
-// after Supabase data has loaded (see init() below) since every cell
-// reads EVENTS/WORKOUTS/TRAINING_BLOCKS.
 function renderCalendar() {
-  const start = addMonths(today.getFullYear(), today.getMonth(), -INITIAL_MONTHS_BEFORE);
-  const end = addMonths(today.getFullYear(), today.getMonth(), INITIAL_MONTHS_AFTER);
-
-  container.appendChild(topSentinel);
-  let { y, m } = start;
-  while (y < end.y || (y === end.y && m <= end.m)) {
+  let { y, m } = RANGE_START;
+  while (y < RANGE_END.y || (y === RANGE_END.y && m <= RANGE_END.m)) {
     container.appendChild(buildMonthEl(y, m));
     m++;
     if (m > 11) { m = 0; y++; }
   }
-  container.appendChild(bottomSentinel);
-
-  renderedStart = start;
-  renderedEnd = end;
-
-  scrollObserver.observe(topSentinel);
-  scrollObserver.observe(bottomSentinel);
 }
 
 // Event delegation: one pair of listeners handles every day tile, rather
