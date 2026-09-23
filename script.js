@@ -21,6 +21,48 @@ function iconSvg(name, size = 20) {
 const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const dayNames = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
+// --- Offline snapshot -------------------------------------------------
+// Supabase is always the source of truth when reachable - this exists
+// only so the app has something to show with no connection at all,
+// rather than the bare "couldn't load" error init() used to show.
+// Read-only: nothing written while offline (toggling a workout complete,
+// saving pace benchmarks) is queued or replayed later, it's just
+// disabled - see isOffline below. Every successful load overwrites the
+// snapshot, so it's always "whatever was last seen while online", not a
+// separately-maintained copy that could drift.
+const OFFLINE_SNAPSHOT_KEY = "training-calendar-offline-snapshot-v1";
+
+function saveOfflineSnapshot() {
+  try {
+    localStorage.setItem(OFFLINE_SNAPSHOT_KEY, JSON.stringify({
+      savedAt: new Date().toISOString(),
+      EVENTS,
+      TRAINING_BLOCKS_RAW,
+      WORKOUTS,
+      loggedDates: Array.from(loggedDates),
+      loggedAtByDate,
+      paceBenchmarks,
+      paceBenchmarkHistory,
+    }));
+  } catch {
+    // Storage full or unavailable (private browsing, quota) - offline
+    // support just won't have anything to fall back to next time. Never
+    // worth failing the page load over.
+  }
+}
+
+function loadOfflineSnapshot() {
+  try {
+    const raw = localStorage.getItem(OFFLINE_SNAPSHOT_KEY);
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw);
+    snapshot.loggedDates = new Set(snapshot.loggedDates || []);
+    return snapshot;
+  } catch {
+    return null;
+  }
+}
+
 // PALETTE is defined in data.js; EVENTS, TRAINING_BLOCKS_RAW and WORKOUTS
 // are fetched from Supabase by supabase.js's loadTrainingData(), assigned
 // once init() runs below. Declared here (rather than left implicitly
@@ -380,7 +422,7 @@ function renderTrainingModal(isoDate, block) {
 
   const isLogged = loggedDates.has(isoDate);
   const completeButtonHtml = workout
-    ? `<button type="button" class="modal-complete-btn${isLogged ? " is-logged" : ""}" data-complete-date="${esc(isoDate)}">${isLogged ? "Marked as complete" : "Mark as complete"}</button>`
+    ? `<button type="button" class="modal-complete-btn${isLogged ? " is-logged" : ""}" data-complete-date="${esc(isoDate)}"${isOffline ? " disabled" : ""}>${isLogged ? "Marked as complete" : "Mark as complete"}</button>`
     : "";
 
   return `
@@ -771,8 +813,8 @@ function renderPacesTab() {
         <span>Run threshold pace (per km)</span>
         <input type="text" inputmode="numeric" placeholder="e.g. 4:30" id="pace-input-run" value="${esc(paceBenchmarks.runThresholdPace)}" autocomplete="off">
       </label>
-      <button type="button" class="paces-save-btn" id="pace-save-btn">Save benchmarks</button>
-      <p class="paces-save-status" id="pace-save-status" role="status" aria-live="polite"></p>
+      <button type="button" class="paces-save-btn" id="pace-save-btn"${isOffline ? " disabled" : ""}>Save benchmarks</button>
+      <p class="paces-save-status" id="pace-save-status" role="status" aria-live="polite">${isOffline ? "Saving is turned off while you're offline." : ""}</p>
     </div>
     <div class="paces-zone-tables">
       ${zoneTableHtml("Swim", "per 100m", SWIM_ZONES, zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset))}
@@ -1338,6 +1380,31 @@ container.addEventListener("keydown", e => {
   }
 });
 
+// True once init() has decided there's no usable connection and fallen
+// back to the offline snapshot - read by the write paths (toggleLogged's
+// caller, the Paces tab's save button) to disable themselves rather than
+// let the user trigger a write that can only fail. Never flips back to
+// false within a session (a fresh network check only happens on next
+// load) - simple, and matches the "offline read-only" scope: this app
+// doesn't attempt to detect reconnection mid-session or queue writes.
+let isOffline = false;
+
+// Shown once, inserted just below the header, whenever init() falls back
+// to the offline snapshot - makes it clear the data on screen isn't
+// live, rather than letting a stale calendar look identical to a fresh
+// one. savedAt is the snapshot's own timestamp (when it was last
+// successfully fetched), not "now".
+function showOfflineBanner(savedAt) {
+  const banner = document.createElement("p");
+  banner.className = "offline-banner";
+  const savedDate = savedAt ? new Date(savedAt) : null;
+  const savedText = savedDate && !Number.isNaN(savedDate.getTime())
+    ? `Showing saved data from ${savedDate.toLocaleDateString("en-GB", { day: "numeric", month: "long" })}.`
+    : "Showing previously saved data.";
+  banner.textContent = `You're offline. ${savedText} Logging workouts and saving paces is turned off until you're back online.`;
+  document.querySelector(".range-header").after(banner);
+}
+
 async function init() {
   try {
     const data = await loadTrainingData();
@@ -1345,8 +1412,25 @@ async function init() {
     TRAINING_BLOCKS_RAW = data.TRAINING_BLOCKS_RAW;
     WORKOUTS = data.WORKOUTS;
   } catch (err) {
-    container.innerHTML = `<p class="modal-empty-note" style="padding:24px;">Couldn't load the calendar data. Check your connection and reload.</p>`;
-    throw err;
+    // Network unreachable (or Supabase itself down) - fall back to
+    // whatever was last successfully loaded, if anything was. This is a
+    // point-in-time snapshot, not a live sync: it can be stale (a new
+    // event added from another device since, say), but it's strictly
+    // better than the bare error screen this used to show unconditionally.
+    const snapshot = loadOfflineSnapshot();
+    if (!snapshot) {
+      container.innerHTML = `<p class="modal-empty-note" style="padding:24px;">Couldn't load the calendar data. Check your connection and reload.</p>`;
+      throw err;
+    }
+    isOffline = true;
+    EVENTS = snapshot.EVENTS;
+    TRAINING_BLOCKS_RAW = snapshot.TRAINING_BLOCKS_RAW;
+    WORKOUTS = snapshot.WORKOUTS;
+    loggedDates = snapshot.loggedDates;
+    loggedAtByDate = snapshot.loggedAtByDate;
+    paceBenchmarks = snapshot.paceBenchmarks;
+    paceBenchmarkHistory = snapshot.paceBenchmarkHistory;
+    showOfflineBanner(snapshot.savedAt);
   }
 
   EVENTS.forEach(ev => {
@@ -1363,30 +1447,38 @@ async function init() {
     return { ...block, colorIndex: ev ? ev.colorIndex : 0 };
   });
 
-  try {
-    const logged = await fetchLoggedDates();
-    loggedDates = logged.dates;
-    loggedAtByDate = logged.loggedAtByDate;
-  } catch {
-    // Logged state just won't be pre-populated this load if this fails -
-    // the calendar itself (built from EVENTS/WORKOUTS above) still works.
-  }
+  // The offline path above already populated loggedDates/loggedAtByDate/
+  // paceBenchmarks/paceBenchmarkHistory from the snapshot - skip
+  // re-fetching (it would just fail the same way the main data fetch
+  // did) and go straight to rendering.
+  if (!isOffline) {
+    try {
+      const logged = await fetchLoggedDates();
+      loggedDates = logged.dates;
+      loggedAtByDate = logged.loggedAtByDate;
+    } catch {
+      // Logged state just won't be pre-populated this load if this fails -
+      // the calendar itself (built from EVENTS/WORKOUTS above) still works.
+    }
 
-  try {
-    const latest = await fetchLatestPaceBenchmarks();
-    if (latest) paceBenchmarks = latest;
-  } catch {
-    // No prior benchmarks (or the fetch failed) - the day popup's Pace
-    // section and the Paces tab both just show nothing resolved yet,
-    // same as a first-time user with nothing saved.
-  }
+    try {
+      const latest = await fetchLatestPaceBenchmarks();
+      if (latest) paceBenchmarks = latest;
+    } catch {
+      // No prior benchmarks (or the fetch failed) - the day popup's Pace
+      // section and the Paces tab both just show nothing resolved yet,
+      // same as a first-time user with nothing saved.
+    }
 
-  try {
-    paceBenchmarkHistory = await fetchPaceBenchmarkHistory();
-  } catch {
-    // Date-aware pace resolution just falls back to the latest values
-    // for every workout if this fails - same behaviour as before this
-    // feature existed, not a hard failure.
+    try {
+      paceBenchmarkHistory = await fetchPaceBenchmarkHistory();
+    } catch {
+      // Date-aware pace resolution just falls back to the latest values
+      // for every workout if this fails - same behaviour as before this
+      // feature existed, not a hard failure.
+    }
+
+    saveOfflineSnapshot();
   }
 
   renderCalendar();

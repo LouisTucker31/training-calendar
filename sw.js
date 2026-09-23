@@ -1,6 +1,6 @@
 // Bump this whenever any cached file changes, so old clients pick up the
 // new version instead of serving stale cached copies indefinitely.
-const CACHE_NAME = "training-calendar-v37";
+const CACHE_NAME = "training-calendar-v38";
 
 const CACHE_FILES = [
   "./",
@@ -38,7 +38,11 @@ self.addEventListener("activate", event => {
 // Cache-first for the static app shell only - training data now lives in
 // Supabase, a live backend, so requests to it must always hit the network
 // (never served from cache) or the app would show stale events/workouts
-// forever and silently fail to sync logged-workout state.
+// forever and silently fail to sync logged-workout state. Offline support
+// for the data itself is handled separately, in script.js (a snapshot of
+// the last successful load, kept in localStorage) - deliberately not
+// here, since caching Supabase's actual API responses would risk serving
+// genuinely stale reads even when back online.
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   if (new URL(event.request.url).hostname.endsWith(".supabase.co")) return;

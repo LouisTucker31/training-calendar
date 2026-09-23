@@ -90,6 +90,28 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Only ever present when init() had to fall back to the offline
+   snapshot - see showOfflineBanner in script.js. Amber, same "needs
+   attention" register as the pace-input fields' edit convention, but a
+   banner rather than an input since there's nothing to type here. */
+.offline-banner {
+  margin: 0 4vw 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@media (min-width: 900px) {
+  .offline-banner {
+    margin-left: 28px;
+    margin-right: 28px;
+  }
+}
+
 .month {
   width: 100%;
   min-height: calc((100vh - var(--header-height)) / 3.5);
@@ -515,6 +537,11 @@ body {
   color: var(--bg);
 }
 
+.modal-complete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Event list panel: centred overlay matching .modal-overlay/.modal-card's
    layout exactly (same dimmed backdrop, flex-centred card, border/padding/
    close-button language), just with a slightly wider max-width to fit
@@ -752,6 +779,11 @@ body {
 
 .paces-save-btn:hover {
   box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.paces-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .paces-save-status {
