@@ -869,12 +869,14 @@ body {
   scroll-margin-top: calc(16px + env(safe-area-inset-top, 0px));
 }
 
-/* Heavier rule + extra gap at the start of each week (Monday), so the
-   list reads in 7-day chunks rather than one continuous run of rows -
-   suppressed on the 1st of a month since the month heading above
-   already provides that break. */
+/* Heavier rule + a clearly larger gap at the start of each week
+   (Monday), so the list reads in 7-day chunks rather than one
+   continuous run of rows - suppressed on the 1st of a month since the
+   month heading above already provides that break. The gap has to be
+   well past the 9px row padding to actually read as a break rather
+   than looking like a rendering glitch. */
 .day-row.week-start {
-  margin-top: 10px;
+  margin-top: 24px;
   border-top: 1px solid var(--line-strong);
 }
 
