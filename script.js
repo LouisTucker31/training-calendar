@@ -1123,16 +1123,23 @@ function buildDayRow(isoDate, dateObj, isFirstOfMonth) {
   let ariaLabel = formatLongDate(isoDate);
 
   if (content) {
-    const dot = document.createElement("span");
-    dot.className = "day-row-dot";
-    const palette = PALETTE[content.colorIndex % PALETTE.length];
-    dot.style.setProperty("--dot-color", palette.dot);
-    if (content.kind === "training" && WORKOUTS[isoDate]) {
-      const isLogged = loggedDates.has(isoDate);
-      if (isLogged) dot.classList.add("is-logged");
-      ariaLabel += isLogged ? ", logged as complete" : ", not yet logged";
+    // Same convention as the month view: a training day gets a circle
+    // that's outlined until logged, then filled; an event day is always
+    // filled (no logged concept); a rest day gets no circle at all.
+    if (content.kind !== "rest") {
+      const dot = document.createElement("span");
+      dot.className = "day-row-dot";
+      const palette = PALETTE[content.colorIndex % PALETTE.length];
+      dot.style.setProperty("--dot-color", palette.dot);
+      if (content.kind === "event") {
+        dot.classList.add("is-filled");
+      } else {
+        const isLogged = loggedDates.has(isoDate);
+        if (isLogged) dot.classList.add("is-filled");
+        ariaLabel += isLogged ? ", logged as complete" : ", not yet logged";
+      }
+      row.appendChild(dot);
     }
-    row.appendChild(dot);
 
     const label = document.createElement("span");
     label.className = "day-row-label";

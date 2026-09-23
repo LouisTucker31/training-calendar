@@ -923,18 +923,21 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Same convention as the month view's .logged-dot: an outline circle for
+   an unlogged workout, filled once logged. Events (no logged state at
+   all) get a permanently filled dot, matching their solid colour swatch
+   on the month view's cell background. */
 .day-row-dot {
   flex: none;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   border: 1.5px solid var(--dot-color, currentColor);
-  background: var(--dot-color, currentColor);
+  background: transparent;
 }
 
-.day-row-dot.is-logged {
+.day-row-dot.is-filled {
   background: var(--dot-color, currentColor);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot-color, currentColor) 25%, transparent);
 }
 
 .day-row-label {
