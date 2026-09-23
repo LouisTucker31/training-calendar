@@ -910,7 +910,10 @@ const todayPillButton = document.getElementById("today-pill");
 const todayPillLabel = document.getElementById("today-pill-label");
 
 todayPillButton.addEventListener("click", () => {
-  scrollToCurrentMonth(true);
+  // Stays on whichever view (month/day) the user is already looking at,
+  // rather than always jumping back to the month view.
+  if (currentView === "day") scrollToToday(true);
+  else scrollToCurrentMonth(true);
   // Waits for the smooth scroll to settle before opening today's popup,
   // so the two happen in sequence rather than the modal appearing over a
   // page that's still mid-scroll. A fixed delay rather than the scrollend

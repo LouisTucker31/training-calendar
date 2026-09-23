@@ -284,6 +284,14 @@ body {
     align-items: stretch;
   }
 
+  /* Without this, the [hidden] attribute's own "display: none" loses to
+     the "display: grid" above (same specificity, this rule wins on
+     source order) - so switching to day view on desktop left the month
+     grid still laid out and scrollable underneath it. */
+  #calendar[hidden] {
+    display: none;
+  }
+
   .month {
     min-height: 0;
     padding: 36px 28px;
