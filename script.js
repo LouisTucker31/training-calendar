@@ -202,19 +202,41 @@ const ZONE_KEYWORDS = {
 // Returns [] if the discipline isn't recognised or nothing matched -
 // callers render no Pace section at all in that case, rather than an
 // empty one.
+//
+// "Easy / Recovery" is checked last and only kept if nothing more
+// specific already matched: its own keyword ("easy") shows up constantly
+// as a plain description of effort ("continuous easy running" on an
+// Endurance/Long session, "Easy ride" on an Endurance Bike) rather than
+// as the zone actually being named, so treating it as equally strong as
+// the other zones produced false extra matches on sessions that were
+// clearly Endurance, not Easy/Recovery, by every other signal.
 function matchedPaceZones(session) {
   const disciplineInfo = ZONES_BY_DISCIPLINE[session.discipline];
   if (!disciplineInfo) return [];
 
   const haystack = `${session.details || ""} ${session.rpe || ""}`.toLowerCase();
   const matches = [];
+  let matchedSomethingSpecific = false;
+
   disciplineInfo.zones.forEach(zone => {
+    if (zone.label === "Easy / Recovery") return; // handled after the loop
     const keywords = ZONE_KEYWORDS[zone.label] || [];
     const isMatch = keywords.some(kw => haystack.includes(kw));
     if (!isMatch) return;
+    matchedSomethingSpecific = true;
     const range = disciplineInfo.rangeFor(zone);
     if (range) matches.push({ label: zone.label, range });
   });
+
+  const easyZone = disciplineInfo.zones.find(z => z.label === "Easy / Recovery");
+  if (easyZone && !matchedSomethingSpecific) {
+    const keywords = ZONE_KEYWORDS["Easy / Recovery"] || [];
+    if (keywords.some(kw => haystack.includes(kw))) {
+      const range = disciplineInfo.rangeFor(easyZone);
+      if (range) matches.unshift({ label: easyZone.label, range });
+    }
+  }
+
   return matches;
 }
 

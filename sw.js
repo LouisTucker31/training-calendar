@@ -1,6 +1,6 @@
 // Bump this whenever any cached file changes, so old clients pick up the
 // new version instead of serving stale cached copies indefinitely.
-const CACHE_NAME = "training-calendar-v22";
+const CACHE_NAME = "training-calendar-v23";
 
 const CACHE_FILES = [
   "./",
