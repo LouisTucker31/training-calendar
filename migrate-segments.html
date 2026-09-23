@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<title>One-time segments migration</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+  button { padding: 10px 18px; font-size: 15px; cursor: pointer; margin-right: 8px; }
+  pre { background: #f4f4f4; padding: 12px; white-space: pre-wrap; word-break: break-word; font-size: 12px; max-height: 500px; overflow-y: auto; }
+  .ok { color: #2a7a2a; }
+  .err { color: #b3261e; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 12px; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f4f4f4; }
+  .zone-yes { color: #2a7a2a; }
+  .zone-no { color: #999; }
+</style>
+</head>
+<body>
+<h1>One-time migration: details string -&gt; segments[]</h1>
+<p>Converts every session's free-text "details" into a structured segments[] array (role, zone, raw text per chunk), while keeping the original details string untouched as a fallback. Preview first, then apply.</p>
+<button id="preview-btn">1. Preview conversion</button>
+<button id="apply-btn" disabled>2. Apply to Supabase</button>
+<div id="summary"></div>
+<div id="preview"></div>
+<pre id="log"></pre>
+
+<script>
+  const SUPABASE_URL = "https://vumsggojkacntpzhprqh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXNnZ29qa2FjbnRwemhwcnFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MTcwMzMsImV4cCI6MjEwMzk5MzAzM30.6GOt0pXy2hi_sQcIMmrCeb_0UF9_tKJQqmvj6iSGWTU";
+
+  // Same zone keyword/role logic as script.js's Pace matcher, duplicated
+  // here rather than shared, since this page has no build step and is
+  // deleted once the migration is done - it only ever needs to match the
+  // production logic at the moment of migration, not stay in sync after.
+  const ZONE_KEYWORDS_BY_DISCIPLINE = {
+    Swim: {
+      "Easy / Recovery": ["easy", "recovery"],
+      "Endurance": ["endurance"],
+      "Race Effort": ["race effort", "race pace", "race-pace", "race"],
+      "CSS / Threshold": ["css", "threshold"],
+    },
+    Bike: {
+      "Easy / Recovery": ["easy", "recovery"],
+      "Endurance": ["endurance"],
+      "Race Effort": ["race effort", "race pace", "race-pace", "race"],
+      "Threshold / Hard": ["threshold", "hard"],
+    },
+    Run: {
+      "Easy / Recovery": ["easy", "recovery"],
+      "Endurance / Long": ["endurance", "long"],
+      "Race Pace": ["race effort", "race pace", "race-pace", "race"],
+      "Threshold": ["threshold"],
+    },
+  };
+
+  function segmentRole(text) {
+    if (/\bwu\b/i.test(text)) return "Warm up";
+    if (/\bcd\b/i.test(text)) return "Cool down";
+    if (/\d+\s*x\s*\d/i.test(text)) return "Intervals";
+    return "";
+  }
+
+  function detectZone(text, discipline) {
+    const keywordMap = ZONE_KEYWORDS_BY_DISCIPLINE[discipline];
+    if (!keywordMap) return "";
+    const haystack = text.toLowerCase();
+    const specificEntries = Object.entries(keywordMap).filter(([label]) => !label.startsWith("Easy"));
+    for (const [label, keywords] of specificEntries) {
+      if (keywords.some(kw => haystack.includes(kw))) return label;
+    }
+    const easyEntry = Object.entries(keywordMap).find(([label]) => label.startsWith("Easy"));
+    if (easyEntry && easyEntry[1].some(kw => haystack.includes(kw))) return easyEntry[0];
+    return "";
+  }
+
+  function extractReps(text) {
+    const match = text.match(/(\d+)\s*x\s*([\d:]+\s*(?:sec|min|m|km)?)/i);
+    if (!match) return { reps: null, repDuration: "" };
+    return { reps: Number(match[1]), repDuration: match[2].trim() };
+  }
+
+  function detailsToSegments(details, discipline) {
+    const text = String(details || "").trim();
+    if (!text) return [];
+    const primarySeparator = text.includes("|") ? "|" : "+";
+    const chunks = text.split(primarySeparator).flatMap(part => part.split(";")).map(s => s.trim()).filter(Boolean);
+    return chunks.map(chunk => {
+      const { reps, repDuration } = extractReps(chunk);
+      return {
+        text: chunk,
+        role: segmentRole(chunk),
+        zone: detectZone(chunk, discipline),
+        reps,
+        repDuration,
+      };
+    });
+  }
+
+  const logEl = document.getElementById("log");
+  function log(msg, cls) {
+    const line = document.createElement("div");
+    if (cls) line.className = cls;
+    line.textContent = msg;
+    logEl.appendChild(line);
+  }
+
+  let converted = null;
+
+  document.getElementById("preview-btn").addEventListener("click", async () => {
+    logEl.textContent = "";
+    document.getElementById("preview").innerHTML = "";
+    document.getElementById("summary").innerHTML = "";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/training_workouts?select=*&order=date.asc`, {
+        headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
+      });
+      if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+      const rows = await res.json();
+
+      let totalSessions = 0, zonedSegments = 0, totalSegments = 0;
+      converted = rows.map(row => {
+        const sessions = row.sessions.map(s => {
+          totalSessions++;
+          const segments = detailsToSegments(s.details, s.discipline);
+          segments.forEach(seg => { totalSegments++; if (seg.zone) zonedSegments++; });
+          return { ...s, segments };
+        });
+        return { date: row.date, sessions };
+      });
+
+      document.getElementById("summary").innerHTML =
+        `<p><strong>${rows.length}</strong> workout days, <strong>${totalSessions}</strong> sessions, <strong>${totalSegments}</strong> segments extracted - <strong>${zonedSegments}</strong> with a detected zone (${Math.round(100 * zonedSegments / totalSegments)}%).</p>`;
+
+      const tableRows = converted.flatMap(row =>
+        row.sessions.map(s => `
+          <tr>
+            <td>${row.date}</td>
+            <td>${s.discipline}</td>
+            <td>${s.session}</td>
+            <td>${(s.details || "").replace(/</g, "&lt;")}</td>
+            <td>${s.segments.map(seg =>
+              `<div class="${seg.zone ? "zone-yes" : "zone-no"}">${seg.role ? `[${seg.role}] ` : ""}${seg.zone ? `(${seg.zone}) ` : ""}${seg.text.replace(/</g, "&lt;")}</div>`
+            ).join("")}</td>
+          </tr>
+        `)
+      ).join("");
+
+      document.getElementById("preview").innerHTML = `
+        <table>
+          <thead><tr><th>Date</th><th>Discipline</th><th>Session</th><th>Original details</th><th>Converted segments</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+
+      document.getElementById("apply-btn").disabled = false;
+      log(`Preview built. Review the table below, then click "Apply to Supabase" if it looks right.`, "ok");
+    } catch (err) {
+      log(`Failed: ${err.message}`, "err");
+    }
+  });
+
+  document.getElementById("apply-btn").addEventListener("click", async () => {
+    if (!converted) return;
+    document.getElementById("apply-btn").disabled = true;
+    log("Applying...");
+    try {
+      for (const row of converted) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/training_workouts?date=eq.${encodeURIComponent(row.date)}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({ sessions: row.sessions }),
+        });
+        if (!res.ok) throw new Error(`${row.date}: ${res.status} ${await res.text()}`);
+      }
+      log(`Applied. Updated ${converted.length} rows - each session now has a segments[] array alongside its original details field (details is untouched).`, "ok");
+    } catch (err) {
+      log(`Failed partway through: ${err.message}. Some rows may already be updated - safe to re-run from the top, it always recomputes from the original details field.`, "err");
+      document.getElementById("apply-btn").disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
