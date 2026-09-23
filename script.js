@@ -1239,6 +1239,14 @@ function buildDayRow(isoDate, dateObj, isFirstOfMonth) {
     label.textContent = content.label;
     row.appendChild(label);
 
+    // Event days get the same background/text tint as their month-view
+    // cell, rather than sitting on plain white like every other row.
+    if (content.kind === "event") {
+      const palette = PALETTE[content.colorIndex % PALETTE.length];
+      row.style.background = palette.bg;
+      label.style.color = palette.text;
+    }
+
     ariaLabel += `: ${content.label}`;
   } else {
     const label = document.createElement("span");
@@ -1284,10 +1292,18 @@ dayViewContainer.addEventListener("keydown", e => {
   }
 });
 
+// Positions today's row a quarter of the way down the viewport rather
+// than flush at the very top (scrollIntoView has no "quarter down"
+// option, only start/center/end, so this scrolls the page directly
+// instead). A quarter down gives a little visual lead-in - the day
+// before today, and however many more fit above it - rather than
+// today's row being the very first thing the eye lands on.
 function scrollToToday(withPulse) {
   const row = dayViewContainer.querySelector(`.day-row[data-date="${todayIso}"]`);
   if (!row) return;
-  row.scrollIntoView({ block: "start", behavior: (withPulse && !prefersReducedMotion) ? "smooth" : "auto" });
+  const rowTop = row.getBoundingClientRect().top + window.scrollY;
+  const targetTop = rowTop - window.innerHeight / 4;
+  window.scrollTo({ top: Math.max(0, targetTop), behavior: (withPulse && !prefersReducedMotion) ? "smooth" : "auto" });
 }
 
 let currentView = "month";

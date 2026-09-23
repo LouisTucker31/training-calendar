@@ -12,6 +12,12 @@
      matching comment on --ink-rgb above. */
   --line-strong-rgb: 185, 189, 196;
   --today-ring: #2f5d8a;
+  /* Structural surfaces that were hardcoded hex values before dark mode
+     existed - now theme-aware like everything else here. */
+  --surface-soft: #f7f7f8;     /* filler calendar cells, row hover */
+  --surface-tabs: #f2f2f3;     /* settings tab-strip background */
+  --input-border: #e3d29a;     /* editable pace-input border */
+  --input-bg: #fdf6df;         /* editable pace-input background (amber tint) */
   /* Rendered height of .range-header - used below to size .month so
      ~3.5 months fit per mobile screen. Named so the relationship is
      obvious if the header's own padding/font-size ever changes. */
@@ -20,6 +26,29 @@
      bottom padding (below) can reserve room for it without hardcoding the
      number twice. */
   --today-pill-clearance: 88px;
+}
+
+/* Dark mode: automatic only, no in-app toggle - the system's own
+   light/dark setting decides. Palette event colours (data.js) are left
+   unchanged in both themes since they're a fixed identity per event, not
+   a light/dark-mode surface; --today-ring is kept close to its light
+   value (just a touch brighter) so it still reads clearly against the
+   darker background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1e21;
+    --ink: #f2f1ef;
+    --ink-rgb: 242, 241, 239;
+    --ink-soft: #a9adb5;
+    --line: #35383e;
+    --line-strong: #464a52;
+    --line-strong-rgb: 70, 74, 82;
+    --today-ring: #6ea0d6;
+    --surface-soft: #232629;
+    --surface-tabs: #26292d;
+    --input-border: #6b5d33;
+    --input-bg: #33301f;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -139,7 +168,7 @@ body {
 }
 
 .days .cell.empty {
-  background: #f7f7f8;
+  background: var(--surface-soft);
 }
 
 /* Logged-workout marker: a small dot in the corner of any day that has a
@@ -306,6 +335,13 @@ body {
   background: rgba(var(--ink-rgb), 0.4);
   display: flex;
   align-items: center;
+  /* "safe" stops a well-known flexbox bug: a centred item taller than its
+     container normally clips at the top with no way to scroll up to it,
+     because only the overflow on one side is reachable. "safe" tells the
+     browser to fall back to start-alignment instead of letting content
+     go unreachable - this is what was cutting the top of tall popups
+     (e.g. the settings panel with an event row expanded) off on mobile. */
+  align-items: safe center;
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
@@ -489,6 +525,10 @@ body {
   background: rgba(var(--ink-rgb), 0.4);
   display: flex;
   align-items: center;
+  /* See the matching comment on .modal-overlay - same fix, same reason
+     (this is the panel that was clipping top/bottom when an event row
+     was expanded). */
+  align-items: safe center;
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
@@ -535,7 +575,7 @@ body {
   display: flex;
   gap: 4px;
   padding: 3px;
-  background: #f2f2f3;
+  background: var(--surface-tabs);
   border-radius: 8px;
 }
 
@@ -684,9 +724,9 @@ body {
    edit" convention as a typical training-plan spreadsheet. */
 .paces-input-field input {
   padding: 9px 10px;
-  border: 1px solid #e3d29a;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
-  background: #fdf6df;
+  background: var(--input-bg);
   color: var(--ink);
   font: inherit;
   font-size: 14px;
@@ -869,7 +909,7 @@ body {
 }
 
 .day-row:hover {
-  background: #f7f7f8;
+  background: var(--surface-soft);
 }
 
 .day-row:focus-visible {

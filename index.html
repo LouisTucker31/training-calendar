@@ -31,7 +31,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training Cal">
-<meta name="theme-color" content="#1c1e21">
+<!-- Two theme-color tags rather than one, so the browser chrome/status
+     bar colour follows the system's own light/dark setting the same way
+     the page itself does (styles.css's prefers-color-scheme block) -
+     the media attribute is what lets the browser pick between them. -->
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1e21" media="(prefers-color-scheme: dark)">
 </head>
 <body>
 
