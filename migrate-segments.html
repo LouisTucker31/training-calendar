@@ -80,21 +80,54 @@
     return { reps: Number(match[1]), repDuration: match[2].trim() };
   }
 
+  function toSegment(chunk, discipline) {
+    const { reps, repDuration } = extractReps(chunk);
+    return {
+      text: chunk,
+      role: segmentRole(chunk),
+      zone: detectZone(chunk, discipline),
+      reps,
+      repDuration,
+    };
+  }
+
+  // Two distinct formats in the data, told apart by whether "|" is
+  // present at all:
+  //
+  // 1. The richer "Workout: A -> B -> C | Effort: ... | Skills: ..."
+  //    format - top-level categories are "|"-separated, and only the
+  //    Workout category is itself a chain of steps, joined with "->"
+  //    (which is what setDetailsHtml/script.js's own splitter already
+  //    treats as the meaningful separator for this format). A stray ";"
+  //    can appear *inside* a single arrow-step's own parenthetical (e.g.
+  //    "6 x 50 m technique (20 sec rest; catch-up/fingertip-drag)") and
+  //    is not a segment boundary there, so this format is never split on
+  //    ";" at all - splitting on ";" everywhere was the original bug,
+  //    cutting steps apart mid-parenthesis. Effort/Pace/Terrain/Skills/
+  //    Fuel categories become one segment each, kept whole rather than
+  //    chased for reps/zone-per-clause, since they're commentary, not a
+  //    sequence of steps.
+  //
+  // 2. The simpler "A; B; C" or "A + B" format (older Dorney/Bristol
+  //    Half sessions) - ";" or "+" is the real separator there, same as
+  //    before.
   function detailsToSegments(details, discipline) {
     const text = String(details || "").trim();
     if (!text) return [];
-    const primarySeparator = text.includes("|") ? "|" : "+";
-    const chunks = text.split(primarySeparator).flatMap(part => part.split(";")).map(s => s.trim()).filter(Boolean);
-    return chunks.map(chunk => {
-      const { reps, repDuration } = extractReps(chunk);
-      return {
-        text: chunk,
-        role: segmentRole(chunk),
-        zone: detectZone(chunk, discipline),
-        reps,
-        repDuration,
-      };
-    });
+
+    if (text.includes("|")) {
+      const categories = text.split("|").map(s => s.trim()).filter(Boolean);
+      return categories.flatMap(category => {
+        const isWorkout = /^workout:/i.test(category);
+        if (!isWorkout) return [toSegment(category, discipline)];
+        const steps = category.split("->").map(s => s.trim()).filter(Boolean);
+        return steps.map(step => toSegment(step, discipline));
+      });
+    }
+
+    const primarySeparator = text.includes("+") ? "+" : ";";
+    const chunks = text.split(primarySeparator).map(s => s.trim()).filter(Boolean);
+    return chunks.map(chunk => toSegment(chunk, discipline));
   }
 
   const logEl = document.getElementById("log");
