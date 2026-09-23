@@ -164,19 +164,15 @@ function bikeZoneRange(lthr, percent) {
   return `${low}-${high} bpm`;
 }
 
-// --- Day-popup Pace section: matches a workout's free-text details/rpe
-// against the zone tables above, so a session that says "Easy / Recovery"
-// (or similar wording) shows its resolved pace/bpm range without needing
-// every existing session in Supabase re-tagged with a structured zone
-// field. Matching runs per-segment (details is split the same way
-// setDetailsHtml already splits it - on "|" or "+"/";") rather than
-// against the whole details string at once, for two reasons: a session
-// with a warm-up at one zone and a main set at another needs each
-// resolved separately rather than both zones bleeding into one match
-// list, and each segment's own wording (WU/CD/an "N x" rep count) is what
-// labels its Pace line - "Warm up"/"Cool down"/"Intervals" instead of the
-// more clinical zone name, falling back to the zone name only when a
-// segment doesn't say which part of the session it is.
+// --- Day-popup Pace section: reads each session's pre-computed
+// segments[] (role/zone already resolved once, by migrate-segments.html,
+// from the original details text - see supabase-schema.sql) and resolves
+// a pace/bpm range per segment from the zone tables above. A session with
+// a warm-up at one zone and a main set at another gets each resolved
+// separately; each segment's own role ("Warm up"/"Cool down"/"Intervals")
+// labels its Pace line instead of the more clinical zone name, falling
+// back to the zone name when a segment has no role (e.g. a "Skills:"
+// note that still named a zone in passing).
 
 const ZONES_BY_DISCIPLINE = {
   Swim: { zones: SWIM_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset), unit: "/100m" },
@@ -184,95 +180,34 @@ const ZONES_BY_DISCIPLINE = {
   Run: { zones: RUN_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset), unit: "/km" },
 };
 
-// Keyed by zone label (shared across disciplines where the wording is the
-// same - "Easy / Recovery" reads identically for swim/bike/run). Each
-// zone's own keywords, checked most-specific-first per segment so
-// "CSS / Threshold" isn't also caught by a looser check that happened to
-// run first.
-const ZONE_KEYWORDS = {
-  "Easy / Recovery": ["easy", "recovery"],
-  "Endurance": ["endurance"],
-  "Endurance / Long": ["endurance", "long"],
-  "Race Effort": ["race effort", "race pace", "race-pace", "race"],
-  "Race Pace": ["race effort", "race pace", "race-pace", "race"],
-  "CSS / Threshold": ["css", "threshold"],
-  "Threshold": ["threshold"],
-  "Threshold / Hard": ["threshold", "hard"],
-};
-
-// A segment naming its own role (warm-up/cool-down/an interval count)
-// labels its Pace line with that role instead of the zone name - "Warm
-// up: 6:15-6:45/km" reads more usefully in-context than "Easy / Recovery:
-// 6:15-6:45/km" when the segment already said "WU". Checked in this
-// order since a segment could technically contain more than one signal
-// (rare, but WU/CD take priority over a rep count if it somehow did).
-function segmentRoleLabel(segment) {
-  if (/\bwu\b/i.test(segment)) return "Warm up";
-  if (/\bcd\b/i.test(segment)) return "Cool down";
-  if (/\d+\s*x\s*\d/i.test(segment)) return "Intervals";
-  return null;
-}
-
-// Splits details the same way setDetailsHtml does (one delimiter, "|" if
-// present else "+"), then further splits each part on ";" - the "|"/"+"
-// split groups by category (Workout vs Effort vs Skills, or a simple
-// list of set components); the ";" split is what actually separates
-// WU/main-set/CD/etc within the workout itself.
-function detailsSegments(details) {
-  const text = String(details || "");
-  if (!text.trim()) return [];
-  const primarySeparator = text.includes("|") ? "|" : "+";
-  return text
-    .split(primarySeparator)
-    .flatMap(part => part.split(";"))
-    .map(s => s.trim())
-    .filter(Boolean);
-}
-
-// Returns [{ label, range }, ...], one entry per segment that matched a
-// zone, in the order the segments appear in details (so warm-up before
-// main set before cool-down, matching how the workout is actually
-// structured) - falls back to scanning rpe as a single extra "segment"
-// when details itself didn't resolve anything, since some sessions only
-// state their zone there (e.g. rpe "Easy / Recovery" with no details).
-// Returns [] if the discipline isn't recognised or nothing matched at
-// all - callers render no Pace section in that case, rather than an
-// empty one.
+// Returns [{ label, range }, ...], one entry per segment whose
+// pre-computed zone resolves to a range, in segment order (so warm-up
+// before main set before cool-down, matching the workout's actual
+// structure). Segments with no zone (blank string - most older sessions
+// never named one in their original text, or a segment is pure
+// commentary like a "Skills:" note) are skipped rather than guessed at.
+// Easy/Recovery is dropped session-wide whenever any other segment
+// already resolved a more specific zone, same reasoning as before: it's
+// rarely the interesting number once a real main-set zone is known.
+// Returns [] if the discipline isn't recognised, there are no segments,
+// or nothing resolved - callers render no Pace section in that case.
 function matchedPaceZones(session) {
   const disciplineInfo = ZONES_BY_DISCIPLINE[session.discipline];
-  if (!disciplineInfo) return [];
+  const segments = session.segments;
+  if (!disciplineInfo || !Array.isArray(segments) || segments.length === 0) return [];
 
-  const segments = detailsSegments(session.details);
-  const searchSegments = segments.length ? segments : [String(session.rpe || "")];
-  const specificZones = disciplineInfo.zones.filter(z => z.label !== "Easy / Recovery");
-  const easyZone = disciplineInfo.zones.find(z => z.label === "Easy / Recovery");
-
-  // First pass: does *any* segment in this session name a specific
-  // (non-Easy) zone? "easy" shows up constantly as a plain description
-  // of effort ("continuous easy running" on an Endurance/Long session)
-  // rather than the zone actually being named, so as soon as one segment
-  // names something more specific, Easy/Recovery is dropped everywhere
-  // in this session, not just within the segment it appeared in.
-  const sessionHasSpecificMatch = searchSegments.some(segment => {
-    const haystack = segment.toLowerCase();
-    return specificZones.some(zone => (ZONE_KEYWORDS[zone.label] || []).some(kw => haystack.includes(kw)));
-  });
+  const zoneByLabel = new Map(disciplineInfo.zones.map(z => [z.label, z]));
+  const sessionHasSpecificMatch = segments.some(seg => seg.zone && seg.zone !== "Easy / Recovery" && zoneByLabel.has(seg.zone));
 
   const matches = [];
-  searchSegments.forEach(segment => {
-    const haystack = segment.toLowerCase();
-
-    let zone = specificZones.find(z => (ZONE_KEYWORDS[z.label] || []).some(kw => haystack.includes(kw)));
-    if (!zone && !sessionHasSpecificMatch && easyZone) {
-      const isEasyMatch = (ZONE_KEYWORDS["Easy / Recovery"] || []).some(kw => haystack.includes(kw));
-      if (isEasyMatch) zone = easyZone;
-    }
+  segments.forEach(seg => {
+    if (!seg.zone) return;
+    if (seg.zone === "Easy / Recovery" && sessionHasSpecificMatch) return;
+    const zone = zoneByLabel.get(seg.zone);
     if (!zone) return;
-
     const range = disciplineInfo.rangeFor(zone);
     if (!range) return;
-
-    matches.push({ label: segmentRoleLabel(segment) || zone.label, range: `${range}${disciplineInfo.unit}` });
+    matches.push({ label: seg.role || zone.label, range: `${range}${disciplineInfo.unit}` });
   });
 
   return matches;
