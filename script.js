@@ -164,6 +164,67 @@ function bikeZoneRange(lthr, percent) {
   return `${low}-${high} bpm`;
 }
 
+// --- Day-popup Pace section: matches a workout's free-text details/rpe
+// against the zone tables above, so a session that says "Easy / Recovery"
+// (or similar wording) shows its resolved pace/bpm range without needing
+// every existing session in Supabase re-tagged with a structured zone
+// field. Keyword lists are deliberately specific-first (e.g. "threshold"
+// checked before the broader "race") so a session mentioning both isn't
+// silently matched to only the first one found; a session can match more
+// than one zone (e.g. a tempo run's easy warm-up + threshold main set),
+// in which case every match gets its own Pace line, per brick/interval
+// sessions genuinely needing more than one target.
+
+const ZONES_BY_DISCIPLINE = {
+  Swim: { zones: SWIM_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset) },
+  Bike: { zones: BIKE_ZONES, rangeFor: zone => bikeZoneRange(paceBenchmarks.cyclingLthr, zone.percent) },
+  Run: { zones: RUN_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset) },
+};
+
+// Keyed by zone label (shared across disciplines where the wording is the
+// same - "Easy / Recovery" reads identically for swim/bike/run). Each
+// zone's own keywords, checked most-specific-first per session so
+// "CSS / Threshold" isn't also caught by a looser check that happened to
+// run first.
+const ZONE_KEYWORDS = {
+  "Easy / Recovery": ["easy", "recovery"],
+  "Endurance": ["endurance"],
+  "Endurance / Long": ["endurance", "long"],
+  "Race Effort": ["race effort", "race pace", "race-pace", "race"],
+  "Race Pace": ["race effort", "race pace", "race-pace", "race"],
+  "CSS / Threshold": ["css", "threshold"],
+  "Threshold": ["threshold"],
+  "Threshold / Hard": ["threshold", "hard"],
+};
+
+// Returns [{ label, range }, ...] for every zone this session's text
+// matches, in the zone table's own row order (fastest/easiest first).
+// Returns [] if the discipline isn't recognised or nothing matched -
+// callers render no Pace section at all in that case, rather than an
+// empty one.
+function matchedPaceZones(session) {
+  const disciplineInfo = ZONES_BY_DISCIPLINE[session.discipline];
+  if (!disciplineInfo) return [];
+
+  const haystack = `${session.details || ""} ${session.rpe || ""}`.toLowerCase();
+  const matches = [];
+  disciplineInfo.zones.forEach(zone => {
+    const keywords = ZONE_KEYWORDS[zone.label] || [];
+    const isMatch = keywords.some(kw => haystack.includes(kw));
+    if (!isMatch) return;
+    const range = disciplineInfo.rangeFor(zone);
+    if (range) matches.push({ label: zone.label, range });
+  });
+  return matches;
+}
+
+function paceFieldHtml(session) {
+  const matches = matchedPaceZones(session);
+  if (matches.length === 0) return "";
+  const lines = matches.map(m => `${esc(m.label)}: ${esc(m.range)}`).join("<br>");
+  return `<div><span class="modal-field-label">Pace</span><span class="modal-field-value">${lines}</span></div>`;
+}
+
 function fieldHtml(label, value) {
   const hasValue = value && String(value).trim().length > 0;
   // "Not specified" rather than "Not added yet" - the latter implies the
@@ -230,6 +291,7 @@ function workoutSessionHtml(s) {
         ${fieldHtml("Duration / Distance", s.duration)}
         ${setDetailsHtml(s.details)}
         ${fieldHtml("Effort (RPE)", s.rpe)}
+        ${paceFieldHtml(s)}
       </div>
     </div>
   `;
@@ -597,13 +659,13 @@ function switchSettingsTab(tab) {
   if (tab === "paces") renderPacesTab();
 }
 
-// Current benchmark values shown in the Paces tab's inputs. Populated
-// from the most recent Supabase row on first open, then kept in sync with
-// whatever's actually typed in the inputs as the source of truth for
-// recalculating the zone tables live - saving writes this same object out
-// as a new row.
+// Current benchmark values - both the Paces tab's inputs and the
+// day-detail popup's Pace section read this. Populated from the most
+// recent Supabase row once at startup (init(), below), then kept in sync
+// with whatever's actually typed in the Paces tab inputs as the source of
+// truth for recalculating live; saving writes this same object out as a
+// new row.
 let paceBenchmarks = { cssPace: "", cyclingLthr: "", runThresholdPace: "" };
-let paceBenchmarksLoaded = false;
 
 function zoneTableHtml(title, unitLabel, zones, rangeForZone) {
   const rows = zones.map(zone => {
@@ -648,22 +710,6 @@ function renderPacesTab() {
       ${zoneTableHtml("Run", "per km", RUN_ZONES, zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset))}
     </div>
   `;
-
-  if (!paceBenchmarksLoaded) {
-    paceBenchmarksLoaded = true;
-    fetchLatestPaceBenchmarks().then(latest => {
-      if (!latest) return;
-      paceBenchmarks = latest;
-      // Only re-render if the Paces tab is still what's showing - avoids
-      // clobbering the Events tab if the fetch resolves after switching
-      // away, and avoids stomping on anything already typed in the
-      // meantime.
-      if (!pacesBody.hidden) renderPacesTab();
-    }).catch(() => {
-      // No prior benchmarks (or the fetch failed) - the tab just starts
-      // blank, same as a first-time user with nothing saved yet.
-    });
-  }
 
   const cssInput = document.getElementById("pace-input-css");
   const lthrInput = document.getElementById("pace-input-lthr");
@@ -1057,6 +1103,15 @@ async function init() {
   } catch {
     // Logged state just won't be pre-populated this load if this fails -
     // the calendar itself (built from EVENTS/WORKOUTS above) still works.
+  }
+
+  try {
+    const latest = await fetchLatestPaceBenchmarks();
+    if (latest) paceBenchmarks = latest;
+  } catch {
+    // No prior benchmarks (or the fetch failed) - the day popup's Pace
+    // section and the Paces tab both just show nothing resolved yet,
+    // same as a first-time user with nothing saved.
   }
 
   renderCalendar();
