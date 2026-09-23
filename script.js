@@ -11,6 +11,7 @@ const ICONS = {
   x: '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
   calendarDays: '<path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path>',
   gauge: '<path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path>',
+  listTodo: '<rect x="3" y="5" width="6" height="6" rx="1"></rect><path d="m3 17 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path>',
 };
 
 function iconSvg(name, size = 20) {
@@ -500,6 +501,9 @@ function handleDayClick(isoDate) {
 const today = new Date();
 const todayIso = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
 const container = document.getElementById("calendar");
+const dayViewContainer = document.getElementById("day-view");
+const viewToggleBtn = document.getElementById("view-toggle");
+const viewToggleIcon = document.getElementById("view-toggle-icon");
 
 // Event list overview: a header-triggered panel listing every event
 // chronologically, each row expandable for full detail. Entirely additive
@@ -806,9 +810,23 @@ document.addEventListener("keydown", e => {
 // WORKOUTS/TRAINING_BLOCKS (already loaded by init() before this is ever
 // called) - no new data model, no changes to day-tile rendering or the
 // logged-dot.
-function todayPillContent() {
-  const workout = WORKOUTS[todayIso];
-  const block = trainingBlockFor(todayIso);
+// Shared by the today-pill and the day-view's per-row summary: given a
+// date, decide what one-line label best represents it (an event takes
+// priority over training, matching handleDayClick's own priority order),
+// and, for a single training session, its first matched pace-zone range
+// if one's available - used only by the day-view row, not the pill,
+// which stays exactly as it read before.
+function dayContent(isoDate) {
+  const dayEvents = eventsByDate[isoDate];
+  if (dayEvents && dayEvents.length) {
+    const label = dayEvents.length > 1
+      ? dayEvents.map(ev => ev.name).join(", ")
+      : dayEvents[0].name;
+    return { label, kind: "event", colorIndex: dayEvents[0].colorIndex };
+  }
+
+  const workout = WORKOUTS[isoDate];
+  const block = trainingBlockFor(isoDate);
 
   if (!block) {
     // Outside any training block entirely (before/after the plan's
@@ -819,24 +837,30 @@ function todayPillContent() {
   if (!workout) {
     // Same "no WORKOUTS entry within a block" convention the day-detail
     // modal already uses to mean Rest Day (see renderTrainingModal).
-    return { label: "Rest Day" };
+    return { label: "Rest Day", kind: "rest", colorIndex: block.colorIndex };
   }
 
   if (workout.sessions.length > 1) {
     // Brick day - name it from the disciplines involved rather than
-    // trying to cram multiple durations onto the pill; the day popup
-    // (via the pill's tap-through, or tapping the cell directly) has the
-    // full breakdown.
+    // trying to cram multiple durations onto the row/pill, the day popup
+    // (via the pill's tap-through, or tapping the cell/row directly) has
+    // the full breakdown.
     const disciplines = workout.sessions.map(s => s.discipline).filter(Boolean);
     const label = disciplines.length === 2
       ? `${disciplines[0]} to ${disciplines[1].toLowerCase()} brick`
       : "Brick session";
-    return { label };
+    return { label, kind: "training", colorIndex: block.colorIndex };
   }
 
   const s = workout.sessions[0];
   const parts = [s.session, s.duration].filter(Boolean);
-  return { label: parts.join(" - ") };
+  const pace = matchedPaceZones(s)[0];
+  if (pace) parts.push(pace.range);
+  return { label: parts.join(" - "), kind: "training", colorIndex: block.colorIndex };
+}
+
+function todayPillContent() {
+  return dayContent(todayIso);
 }
 
 function updateTodayPill() {
@@ -1064,6 +1088,125 @@ function renderCalendar() {
   }
 }
 
+// --- Day view: one row per date, RANGE_START to RANGE_END -----------
+// A flat list rather than infinite-scroll-generated (see the note above
+// renderCalendar - the IntersectionObserver approach proved unreliable
+// in practice for the month view, so the day view is built the same
+// simple way: the whole range up front). Entirely additive - reuses the
+// same EVENTS/TRAINING_BLOCKS/WORKOUTS data and dayContent()/
+// handleDayClick() the month view already uses, so a row opens the
+// exact same popup a month-view cell would for the same date.
+function buildDayRow(isoDate, dateObj, isFirstOfMonth) {
+  const row = document.createElement("div");
+  row.className = "day-row";
+  row.dataset.date = isoDate;
+  row.setAttribute("role", "button");
+  row.tabIndex = 0;
+
+  const weekday = (dateObj.getDay() === 0) ? 6 : dateObj.getDay() - 1; // Mon=0
+  if (weekday === 0 && !isFirstOfMonth) row.classList.add("week-start");
+  if (dateObj.toDateString() === today.toDateString()) row.classList.add("today");
+
+  const dateCol = document.createElement("div");
+  dateCol.className = "day-row-date";
+  const weekdaySpan = document.createElement("span");
+  weekdaySpan.className = "day-row-weekday";
+  weekdaySpan.textContent = dayNames[weekday];
+  const numSpan = document.createElement("span");
+  numSpan.className = "day-row-num";
+  numSpan.textContent = dateObj.getDate();
+  dateCol.appendChild(weekdaySpan);
+  dateCol.appendChild(numSpan);
+  row.appendChild(dateCol);
+
+  const content = dayContent(isoDate);
+  let ariaLabel = formatLongDate(isoDate);
+
+  if (content) {
+    const dot = document.createElement("span");
+    dot.className = "day-row-dot";
+    const palette = PALETTE[content.colorIndex % PALETTE.length];
+    dot.style.setProperty("--dot-color", palette.dot);
+    if (content.kind === "training" && WORKOUTS[isoDate]) {
+      const isLogged = loggedDates.has(isoDate);
+      if (isLogged) dot.classList.add("is-logged");
+      ariaLabel += isLogged ? ", logged as complete" : ", not yet logged";
+    }
+    row.appendChild(dot);
+
+    const label = document.createElement("span");
+    label.className = "day-row-label";
+    label.textContent = content.label;
+    row.appendChild(label);
+
+    ariaLabel += `: ${content.label}`;
+  } else {
+    const label = document.createElement("span");
+    label.className = "day-row-label day-row-label-empty";
+    label.textContent = "Rest day";
+    row.appendChild(label);
+  }
+
+  row.setAttribute("aria-label", ariaLabel);
+  return row;
+}
+
+function renderDayView() {
+  let { y, m } = RANGE_START;
+  while (y < RANGE_END.y || (y === RANGE_END.y && m <= RANGE_END.m)) {
+    const heading = document.createElement("div");
+    heading.className = "day-view-month-heading";
+    heading.textContent = `${monthNames[m]} ${y}`;
+    dayViewContainer.appendChild(heading);
+
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(y, m, d);
+      const isoDate = `${y}-${pad2(m + 1)}-${pad2(d)}`;
+      dayViewContainer.appendChild(buildDayRow(isoDate, dateObj, d === 1));
+    }
+
+    m++;
+    if (m > 11) { m = 0; y++; }
+  }
+}
+
+dayViewContainer.addEventListener("click", e => {
+  const row = e.target.closest(".day-row[data-date]");
+  if (row) handleDayClick(row.dataset.date);
+});
+dayViewContainer.addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const row = e.target.closest(".day-row[data-date]");
+  if (row) {
+    e.preventDefault();
+    handleDayClick(row.dataset.date);
+  }
+});
+
+function scrollToToday(withPulse) {
+  const row = dayViewContainer.querySelector(`.day-row[data-date="${todayIso}"]`);
+  if (!row) return;
+  row.scrollIntoView({ block: "start", behavior: (withPulse && !prefersReducedMotion) ? "smooth" : "auto" });
+}
+
+let currentView = "month";
+
+function setView(view) {
+  currentView = view;
+  container.hidden = view !== "month";
+  dayViewContainer.hidden = view !== "day";
+  viewToggleBtn.setAttribute("aria-pressed", view === "day" ? "true" : "false");
+  viewToggleBtn.setAttribute("aria-label", view === "day" ? "Switch to month view" : "Switch to day view");
+  viewToggleIcon.innerHTML = iconSvg(view === "day" ? "calendarDays" : "listTodo", 20);
+  if (view === "day") scrollToToday(false);
+  else scrollToCurrentMonth(false);
+}
+
+viewToggleBtn.addEventListener("click", () => {
+  setView(currentView === "month" ? "day" : "month");
+});
+
 // Event delegation: one pair of listeners handles every day tile, rather
 // than one per cell.
 container.addEventListener("click", e => {
@@ -1121,12 +1264,13 @@ async function init() {
   }
 
   renderCalendar();
+  renderDayView();
   updateTodayPill();
   // Opens with the current month at the top of the viewport, same
   // positioning the today-pill's tap-through (scrollToCurrentMonth(true))
   // scrolls to - just without the smooth-scroll animation or pulse, since
   // there's nothing to animate from on first load.
-  scrollToCurrentMonth(false);
+  setView("month");
 }
 
 init();

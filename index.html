@@ -53,18 +53,21 @@
 </div>
 
 <div id="calendar"></div>
+<div id="day-view" hidden></div>
 
-<!-- Liquid glass "today" toolbar: the outer two circles are decorative
-     only (no icon, no function - kept purely for the three-piece glass
-     look), the centre pill is the app's today button, wired up in
-     script.js. Hidden by default; script.js reveals it once there's a
-     workout/rest-day summary to show for today, same as the pill this
-     replaces. -->
+<!-- Liquid glass "today" toolbar: the left circle toggles month/day view
+     (icon filled in by script.js's setView, matching the ICONS set
+     every other icon in the app uses), the right circle stays
+     decorative (no icon, no function - kept purely for the three-piece
+     glass look), and the centre pill is the app's today button. Hidden
+     by default; script.js reveals it once there's a workout/rest-day
+     summary to show for today, same as the pill this replaces. -->
 <div class="lg-toolbar" id="today-toolbar" role="presentation" hidden>
-  <div class="lg-toolbar__circle lg-surface" aria-hidden="true">
+  <button type="button" class="lg-toolbar__circle lg-surface" id="view-toggle" aria-pressed="false">
     <span class="lg-surface__lens" aria-hidden="true"></span>
     <span class="lg-surface__frost" aria-hidden="true"></span>
-  </div>
+    <span class="lg-toolbar__circle-icon" id="view-toggle-icon"></span>
+  </button>
 
   <button type="button" class="lg-toolbar__pill lg-surface" id="today-pill">
     <span class="lg-surface__lens" aria-hidden="true"></span>

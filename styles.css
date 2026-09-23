@@ -831,3 +831,116 @@ body {
     transition-duration: 0.001s !important;
   }
 }
+
+/* Day view: a flat list alternative to the month grid, toggled by the
+   liquid-glass toolbar's left button (see #view-toggle in script.js).
+   Same left/right edges as .range-header/.month (4vw), so switching
+   views doesn't shift the content edges the user's eye has already
+   settled on. */
+#day-view {
+  padding: 8px 4vw calc(32px + var(--today-pill-clearance) + env(safe-area-inset-bottom));
+}
+
+#day-view[hidden] {
+  display: none;
+}
+
+.day-view-month-heading {
+  padding: 22px 2px 8px;
+  font-size: clamp(15px, 1.9vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.day-view-month-heading:first-child {
+  padding-top: 6px;
+}
+
+.day-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 2px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  scroll-margin-top: calc(16px + env(safe-area-inset-top, 0px));
+}
+
+/* Heavier rule + extra gap at the start of each week (Monday), so the
+   list reads in 7-day chunks rather than one continuous run of rows -
+   suppressed on the 1st of a month since the month heading above
+   already provides that break. */
+.day-row.week-start {
+  margin-top: 10px;
+  border-top: 1px solid var(--line-strong);
+}
+
+.day-row:hover {
+  background: #f7f7f8;
+}
+
+.day-row:focus-visible {
+  outline: 2px solid var(--today-ring);
+  outline-offset: -2px;
+}
+
+.day-row.today {
+  box-shadow: inset 0 0 0 1.5px var(--today-ring);
+  border-radius: 6px;
+}
+
+.day-row-date {
+  flex: 0 0 56px;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.day-row-weekday {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.day-row-num {
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-row-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--dot-color, currentColor);
+  background: var(--dot-color, currentColor);
+}
+
+.day-row-dot.is-logged {
+  background: var(--dot-color, currentColor);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot-color, currentColor) 25%, transparent);
+}
+
+.day-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-row-label-empty {
+  color: var(--ink-soft);
+}
+
+@media (min-width: 900px) {
+  #day-view {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+}

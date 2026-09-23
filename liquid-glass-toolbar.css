@@ -170,11 +170,38 @@
   flex: 0 0 var(--lg-toolbar-height);
   width: var(--lg-toolbar-height);
   height: var(--lg-toolbar-height);
+  display: grid;
+  place-items: center;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
+  color: var(--lg-ink);
   pointer-events: none;
+}
+
+/* The left circle is the one exception: it's a real button (the
+   month/day view toggle), so it gets pointer events, an icon slot and
+   interactive states back - the right circle stays fully inert. */
+#view-toggle.lg-toolbar__circle {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#view-toggle.lg-toolbar__circle:active { transform: scale(1.1); }
+#view-toggle.lg-toolbar__circle:focus-visible { outline: 2px solid #3480f0; outline-offset: 2px; }
+
+.lg-toolbar__circle-icon {
+  display: grid;
+  place-items: center;
+}
+.lg-toolbar__circle-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #view-toggle.lg-toolbar__circle { transition: none; }
 }
 
 /* Centre pill: the app's own today button, sized and styled like the
