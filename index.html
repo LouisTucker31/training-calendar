@@ -37,14 +37,15 @@
 <div class="range-header">
   <div class="range-header-top">
     <h1>2026–27 Training Event Calendar</h1>
-    <button type="button" id="event-list-trigger" aria-label="Show event list" aria-haspopup="dialog" aria-expanded="false">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="8" y1="6" x2="21" y2="6"></line>
-        <line x1="8" y1="12" x2="21" y2="12"></line>
-        <line x1="8" y1="18" x2="21" y2="18"></line>
-        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+    <button type="button" id="event-list-trigger" aria-label="Show events and pace settings" aria-haspopup="dialog" aria-expanded="false">
+      <!-- Lucide "menu" icon - kept in sync with the ICONS.menu entry in
+           script.js, which is what every other icon in the app is
+           rendered from; this one has to stay static markup since it's
+           visible before any JS runs. -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="4" x2="20" y1="6" y2="6"></line>
+        <line x1="4" x2="20" y1="12" y2="12"></line>
+        <line x1="4" x2="20" y1="18" y2="18"></line>
       </svg>
     </button>
   </div>

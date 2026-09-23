@@ -1,3 +1,22 @@
+// One consistent icon set (Lucide, https://lucide.dev) used everywhere in
+// the app, inlined as raw SVG markup rather than loaded from a CDN - this
+// app has zero external script dependencies and a CSP that only allows
+// same-origin scripts, so inlining avoids adding a new supply-chain
+// dependency and a CSP change for a handful of icons. Each entry is the
+// exact <path>/<line> content Lucide ships for that icon, at their
+// standard 24x24 viewBox/2px stroke - the wrapping <svg> attributes are
+// applied by iconSvg() below so every icon renders identically.
+const ICONS = {
+  menu: '<line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="18" y2="18"></line>',
+  x: '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
+  calendarDays: '<path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path>',
+  gauge: '<path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path>',
+};
+
+function iconSvg(name, size = 20) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+}
+
 const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const dayNames = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
@@ -76,6 +95,73 @@ function esc(str) {
   const d = document.createElement("div");
   d.textContent = str == null ? "" : String(str);
   return d.innerHTML;
+}
+
+// --- Pace-benchmark calculator (Paces tab) ---------------------------
+// Not wired into WORKOUTS/the day popup yet - this is just the storage +
+// live-calculating tables, per the brief. Zone offsets/percentages below
+// are named constants specifically so they're easy to tune later without
+// hunting through render logic.
+
+// Swim/run zones: a +/- offset in seconds from a base per-distance pace
+// ("mm:ss" per 100m for swim, per km for run). [minSeconds, maxSeconds]
+// added to the base pace's seconds; CSS/Threshold rows use a negative
+// lower bound (i.e. the pace range straddles the benchmark itself).
+const SWIM_ZONES = [
+  { label: "Easy / Recovery", offset: [20, 30] },
+  { label: "Endurance", offset: [10, 20] },
+  { label: "Race Effort", offset: [5, 15] },
+  { label: "CSS / Threshold", offset: [-5, 5] },
+];
+
+const RUN_ZONES = [
+  { label: "Easy / Recovery", offset: [60, 90] },
+  { label: "Endurance / Long", offset: [45, 75] },
+  { label: "Race Pace", offset: [30, 50] },
+  { label: "Threshold", offset: [-5, 5] },
+];
+
+// Bike zones: a [minPercent, maxPercent] of LTHR, producing a bpm range.
+const BIKE_ZONES = [
+  { label: "Easy / Recovery", percent: [65, 74] },
+  { label: "Endurance", percent: [75, 82] },
+  { label: "Race Effort", percent: [83, 88] },
+  { label: "Threshold / Hard", percent: [89, 100] },
+];
+
+// Parses "mm:ss" (or "m:ss") into total seconds. Returns null for
+// anything that isn't a valid pace string, so callers can tell "not
+// entered yet" apart from "entered wrong".
+function parsePaceToSeconds(pace) {
+  if (!pace) return null;
+  const match = String(pace).trim().match(/^(\d{1,2}):([0-5]\d)$/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function formatSecondsToPace(totalSeconds) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  return `${Math.floor(s / 60)}:${pad2(s % 60)}`;
+}
+
+// Slower paces = bigger mm:ss, so the zone's smaller offset gives the
+// faster (smaller-number) end of the displayed range and the bigger
+// offset gives the slower end - i.e. offset order maps directly to
+// fastest-first without needing to sort.
+function paceZoneRange(basePace, offset) {
+  const baseSeconds = parsePaceToSeconds(basePace);
+  if (baseSeconds == null) return null;
+  const fast = formatSecondsToPace(baseSeconds + offset[0]);
+  const slow = formatSecondsToPace(baseSeconds + offset[1]);
+  return `${fast}-${slow}`;
+}
+
+function bikeZoneRange(lthr, percent) {
+  const bpm = Number(lthr);
+  if (!lthr || !Number.isFinite(bpm) || bpm <= 0) return null;
+  const low = Math.round((bpm * percent[0]) / 100);
+  const high = Math.round((bpm * percent[1]) / 100);
+  return `${low}-${high} bpm`;
 }
 
 function fieldHtml(label, value) {
@@ -240,7 +326,7 @@ modalCard.tabIndex = -1; // focusable as the dialog itself, not in tab order
 const modalCloseBtn = document.createElement("button");
 modalCloseBtn.className = "modal-close";
 modalCloseBtn.setAttribute("aria-label", "Close");
-modalCloseBtn.textContent = "×";
+modalCloseBtn.innerHTML = iconSvg("x", 18);
 
 const modalBody = document.createElement("div");
 
@@ -444,6 +530,12 @@ function renderEventListPanel() {
   return sorted.map(eventListRowHtml).join("");
 }
 
+// Settings modal: one overlay/panel shared by two tabs, Events (the
+// original event list, unchanged in behaviour) and Paces (the new
+// benchmark inputs + calculated zone tables below). The header icon's own
+// meaning still primarily reads as "show me the events list" - the modal
+// always opens on the Events tab regardless of which tab was showing last
+// time it was closed.
 const eventListOverlay = document.createElement("div");
 eventListOverlay.className = "event-list-overlay";
 eventListOverlay.hidden = true;
@@ -452,29 +544,173 @@ const eventListPanel = document.createElement("div");
 eventListPanel.className = "event-list-panel";
 eventListPanel.setAttribute("role", "dialog");
 eventListPanel.setAttribute("aria-modal", "true");
-eventListPanel.setAttribute("aria-label", "Event list");
+eventListPanel.setAttribute("aria-label", "Events and paces");
 eventListPanel.tabIndex = -1;
 
 const eventListHeader = document.createElement("div");
 eventListHeader.className = "event-list-panel-header";
-eventListHeader.innerHTML = `<h2 class="event-list-panel-title">All events</h2>`;
+eventListHeader.innerHTML = `
+  <div class="settings-tabs" role="tablist" aria-label="Settings section">
+    <button type="button" class="settings-tab is-active" role="tab" aria-selected="true" aria-controls="settings-tab-events" data-tab="events">
+      ${iconSvg("calendarDays", 16)}<span>Events</span>
+    </button>
+    <button type="button" class="settings-tab" role="tab" aria-selected="false" aria-controls="settings-tab-paces" data-tab="paces">
+      ${iconSvg("gauge", 16)}<span>Paces</span>
+    </button>
+  </div>
+`;
 
 const eventListCloseBtn = document.createElement("button");
 eventListCloseBtn.type = "button";
 eventListCloseBtn.className = "event-list-close";
 eventListCloseBtn.setAttribute("aria-label", "Close");
-eventListCloseBtn.textContent = "×";
+eventListCloseBtn.innerHTML = iconSvg("x", 18);
 eventListHeader.appendChild(eventListCloseBtn);
 
 const eventListBody = document.createElement("div");
+eventListBody.id = "settings-tab-events";
+eventListBody.setAttribute("role", "tabpanel");
+
+const pacesBody = document.createElement("div");
+pacesBody.id = "settings-tab-paces";
+pacesBody.setAttribute("role", "tabpanel");
+pacesBody.hidden = true;
 
 eventListPanel.appendChild(eventListHeader);
 eventListPanel.appendChild(eventListBody);
+eventListPanel.appendChild(pacesBody);
 eventListOverlay.appendChild(eventListPanel);
 document.body.appendChild(eventListOverlay);
 
 const eventListTrigger = document.getElementById("event-list-trigger");
 let eventListLastFocused = null;
+
+function switchSettingsTab(tab) {
+  const tabButtons = eventListHeader.querySelectorAll(".settings-tab");
+  tabButtons.forEach(btn => {
+    const active = btn.dataset.tab === tab;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-selected", String(active));
+  });
+  eventListBody.hidden = tab !== "events";
+  pacesBody.hidden = tab !== "paces";
+  if (tab === "paces") renderPacesTab();
+}
+
+// Current benchmark values shown in the Paces tab's inputs. Populated
+// from the most recent Supabase row on first open, then kept in sync with
+// whatever's actually typed in the inputs as the source of truth for
+// recalculating the zone tables live - saving writes this same object out
+// as a new row.
+let paceBenchmarks = { cssPace: "", cyclingLthr: "", runThresholdPace: "" };
+let paceBenchmarksLoaded = false;
+
+function zoneTableHtml(title, unitLabel, zones, rangeForZone) {
+  const rows = zones.map(zone => {
+    const range = rangeForZone(zone);
+    return `
+      <tr>
+        <td>${esc(zone.label)}</td>
+        <td class="paces-zone-value${range ? "" : " is-empty"}">${range ? esc(range) : "Enter a benchmark above"}</td>
+      </tr>
+    `;
+  }).join("");
+  return `
+    <table class="paces-zone-table">
+      <caption>${esc(title)} <span class="paces-zone-unit">${esc(unitLabel)}</span></caption>
+      <thead><tr><th scope="col">Zone</th><th scope="col">Target</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderPacesTab() {
+  pacesBody.innerHTML = `
+    <div class="paces-benchmarks">
+      <label class="paces-input-field">
+        <span>Swim CSS pace (per 100m)</span>
+        <input type="text" inputmode="numeric" placeholder="e.g. 1:35" id="pace-input-css" value="${esc(paceBenchmarks.cssPace)}" autocomplete="off">
+      </label>
+      <label class="paces-input-field">
+        <span>Cycling LTHR (bpm)</span>
+        <input type="number" min="0" max="300" placeholder="e.g. 165" id="pace-input-lthr" value="${esc(paceBenchmarks.cyclingLthr)}" autocomplete="off">
+      </label>
+      <label class="paces-input-field">
+        <span>Run threshold pace (per km)</span>
+        <input type="text" inputmode="numeric" placeholder="e.g. 4:30" id="pace-input-run" value="${esc(paceBenchmarks.runThresholdPace)}" autocomplete="off">
+      </label>
+      <button type="button" class="paces-save-btn" id="pace-save-btn">Save benchmarks</button>
+      <p class="paces-save-status" id="pace-save-status" role="status" aria-live="polite"></p>
+    </div>
+    <div class="paces-zone-tables">
+      ${zoneTableHtml("Swim", "per 100m", SWIM_ZONES, zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset))}
+      ${zoneTableHtml("Bike", "bpm", BIKE_ZONES, zone => bikeZoneRange(paceBenchmarks.cyclingLthr, zone.percent))}
+      ${zoneTableHtml("Run", "per km", RUN_ZONES, zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset))}
+    </div>
+  `;
+
+  if (!paceBenchmarksLoaded) {
+    paceBenchmarksLoaded = true;
+    fetchLatestPaceBenchmarks().then(latest => {
+      if (!latest) return;
+      paceBenchmarks = latest;
+      // Only re-render if the Paces tab is still what's showing - avoids
+      // clobbering the Events tab if the fetch resolves after switching
+      // away, and avoids stomping on anything already typed in the
+      // meantime.
+      if (!pacesBody.hidden) renderPacesTab();
+    }).catch(() => {
+      // No prior benchmarks (or the fetch failed) - the tab just starts
+      // blank, same as a first-time user with nothing saved yet.
+    });
+  }
+
+  const cssInput = document.getElementById("pace-input-css");
+  const lthrInput = document.getElementById("pace-input-lthr");
+  const runInput = document.getElementById("pace-input-run");
+  const saveBtn = document.getElementById("pace-save-btn");
+  const saveStatus = document.getElementById("pace-save-status");
+
+  function recalculate() {
+    paceBenchmarks = {
+      cssPace: cssInput.value.trim(),
+      cyclingLthr: lthrInput.value.trim(),
+      runThresholdPace: runInput.value.trim(),
+    };
+    pacesBody.querySelectorAll(".paces-zone-table").forEach((table, i) => {
+      const zones = [SWIM_ZONES, BIKE_ZONES, RUN_ZONES][i];
+      const rangeForZone = [
+        z => paceZoneRange(paceBenchmarks.cssPace, z.offset),
+        z => bikeZoneRange(paceBenchmarks.cyclingLthr, z.percent),
+        z => paceZoneRange(paceBenchmarks.runThresholdPace, z.offset),
+      ][i];
+      table.querySelectorAll("tbody tr").forEach((row, rowIndex) => {
+        const range = rangeForZone(zones[rowIndex]);
+        const valueCell = row.querySelector(".paces-zone-value");
+        valueCell.textContent = range || "Enter a benchmark above";
+        valueCell.classList.toggle("is-empty", !range);
+      });
+    });
+  }
+
+  [cssInput, lthrInput, runInput].forEach(input => {
+    input.addEventListener("input", recalculate);
+  });
+
+  saveBtn.addEventListener("click", () => {
+    saveStatus.textContent = "Saving...";
+    insertPaceBenchmarks(paceBenchmarks).then(() => {
+      saveStatus.textContent = "Saved.";
+    }).catch(() => {
+      saveStatus.textContent = "Couldn't save - check your connection and try again.";
+    });
+  });
+}
+
+eventListHeader.addEventListener("click", e => {
+  const tabBtn = e.target.closest(".settings-tab");
+  if (tabBtn) switchSettingsTab(tabBtn.dataset.tab);
+});
 
 function openEventList() {
   eventListBody.innerHTML = renderEventListPanel();
@@ -484,6 +720,7 @@ function openEventList() {
   eventListPanel.focus();
   lockBodyScroll();
   todayPill.hidden = true;
+  switchSettingsTab("events");
 }
 
 function closeEventList() {

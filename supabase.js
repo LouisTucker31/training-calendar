@@ -81,3 +81,32 @@ async function deleteLoggedDate(isoDate) {
     method: "DELETE",
   });
 }
+
+// Returns the most recent pace-benchmark row (or null if none exist yet),
+// reshaped to camelCase. Every save inserts a new row rather than
+// updating one in place (see insertPaceBenchmarks below), so this is
+// always "the latest values", not "the only values" - past rows are
+// never read back by the app yet, just preserved for later.
+async function fetchLatestPaceBenchmarks() {
+  const rows = await supabaseRequest("training_pace_benchmarks?select=*&order=set_at.desc&limit=1");
+  if (!rows || rows.length === 0) return null;
+  const r = rows[0];
+  return {
+    cssPace: r.css_pace || "",
+    cyclingLthr: r.cycling_lthr ?? null,
+    runThresholdPace: r.run_threshold_pace || "",
+  };
+}
+
+// Always an insert, never an update - see the table comment in
+// supabase-schema.sql for why (preserves benchmark history over time).
+async function insertPaceBenchmarks({ cssPace, cyclingLthr, runThresholdPace }) {
+  await supabaseRequest("training_pace_benchmarks", {
+    method: "POST",
+    body: JSON.stringify({
+      css_pace: cssPace || null,
+      cycling_lthr: cyclingLthr === "" || cyclingLthr == null ? null : Number(cyclingLthr),
+      run_threshold_pace: runThresholdPace || null,
+    }),
+  });
+}
