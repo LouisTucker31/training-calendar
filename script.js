@@ -168,22 +168,25 @@ function bikeZoneRange(lthr, percent) {
 // against the zone tables above, so a session that says "Easy / Recovery"
 // (or similar wording) shows its resolved pace/bpm range without needing
 // every existing session in Supabase re-tagged with a structured zone
-// field. Keyword lists are deliberately specific-first (e.g. "threshold"
-// checked before the broader "race") so a session mentioning both isn't
-// silently matched to only the first one found; a session can match more
-// than one zone (e.g. a tempo run's easy warm-up + threshold main set),
-// in which case every match gets its own Pace line, per brick/interval
-// sessions genuinely needing more than one target.
+// field. Matching runs per-segment (details is split the same way
+// setDetailsHtml already splits it - on "|" or "+"/";") rather than
+// against the whole details string at once, for two reasons: a session
+// with a warm-up at one zone and a main set at another needs each
+// resolved separately rather than both zones bleeding into one match
+// list, and each segment's own wording (WU/CD/an "N x" rep count) is what
+// labels its Pace line - "Warm up"/"Cool down"/"Intervals" instead of the
+// more clinical zone name, falling back to the zone name only when a
+// segment doesn't say which part of the session it is.
 
 const ZONES_BY_DISCIPLINE = {
-  Swim: { zones: SWIM_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset) },
-  Bike: { zones: BIKE_ZONES, rangeFor: zone => bikeZoneRange(paceBenchmarks.cyclingLthr, zone.percent) },
-  Run: { zones: RUN_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset) },
+  Swim: { zones: SWIM_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.cssPace, zone.offset), unit: "/100m" },
+  Bike: { zones: BIKE_ZONES, rangeFor: zone => bikeZoneRange(paceBenchmarks.cyclingLthr, zone.percent), unit: "" },
+  Run: { zones: RUN_ZONES, rangeFor: zone => paceZoneRange(paceBenchmarks.runThresholdPace, zone.offset), unit: "/km" },
 };
 
 // Keyed by zone label (shared across disciplines where the wording is the
 // same - "Easy / Recovery" reads identically for swim/bike/run). Each
-// zone's own keywords, checked most-specific-first per session so
+// zone's own keywords, checked most-specific-first per segment so
 // "CSS / Threshold" isn't also caught by a looser check that happened to
 // run first.
 const ZONE_KEYWORDS = {
@@ -197,45 +200,80 @@ const ZONE_KEYWORDS = {
   "Threshold / Hard": ["threshold", "hard"],
 };
 
-// Returns [{ label, range }, ...] for every zone this session's text
-// matches, in the zone table's own row order (fastest/easiest first).
-// Returns [] if the discipline isn't recognised or nothing matched -
-// callers render no Pace section at all in that case, rather than an
+// A segment naming its own role (warm-up/cool-down/an interval count)
+// labels its Pace line with that role instead of the zone name - "Warm
+// up: 6:15-6:45/km" reads more usefully in-context than "Easy / Recovery:
+// 6:15-6:45/km" when the segment already said "WU". Checked in this
+// order since a segment could technically contain more than one signal
+// (rare, but WU/CD take priority over a rep count if it somehow did).
+function segmentRoleLabel(segment) {
+  if (/\bwu\b/i.test(segment)) return "Warm up";
+  if (/\bcd\b/i.test(segment)) return "Cool down";
+  if (/\d+\s*x\s*\d/i.test(segment)) return "Intervals";
+  return null;
+}
+
+// Splits details the same way setDetailsHtml does (one delimiter, "|" if
+// present else "+"), then further splits each part on ";" - the "|"/"+"
+// split groups by category (Workout vs Effort vs Skills, or a simple
+// list of set components); the ";" split is what actually separates
+// WU/main-set/CD/etc within the workout itself.
+function detailsSegments(details) {
+  const text = String(details || "");
+  if (!text.trim()) return [];
+  const primarySeparator = text.includes("|") ? "|" : "+";
+  return text
+    .split(primarySeparator)
+    .flatMap(part => part.split(";"))
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+// Returns [{ label, range }, ...], one entry per segment that matched a
+// zone, in the order the segments appear in details (so warm-up before
+// main set before cool-down, matching how the workout is actually
+// structured) - falls back to scanning rpe as a single extra "segment"
+// when details itself didn't resolve anything, since some sessions only
+// state their zone there (e.g. rpe "Easy / Recovery" with no details).
+// Returns [] if the discipline isn't recognised or nothing matched at
+// all - callers render no Pace section in that case, rather than an
 // empty one.
-//
-// "Easy / Recovery" is checked last and only kept if nothing more
-// specific already matched: its own keyword ("easy") shows up constantly
-// as a plain description of effort ("continuous easy running" on an
-// Endurance/Long session, "Easy ride" on an Endurance Bike) rather than
-// as the zone actually being named, so treating it as equally strong as
-// the other zones produced false extra matches on sessions that were
-// clearly Endurance, not Easy/Recovery, by every other signal.
 function matchedPaceZones(session) {
   const disciplineInfo = ZONES_BY_DISCIPLINE[session.discipline];
   if (!disciplineInfo) return [];
 
-  const haystack = `${session.details || ""} ${session.rpe || ""}`.toLowerCase();
-  const matches = [];
-  let matchedSomethingSpecific = false;
+  const segments = detailsSegments(session.details);
+  const searchSegments = segments.length ? segments : [String(session.rpe || "")];
+  const specificZones = disciplineInfo.zones.filter(z => z.label !== "Easy / Recovery");
+  const easyZone = disciplineInfo.zones.find(z => z.label === "Easy / Recovery");
 
-  disciplineInfo.zones.forEach(zone => {
-    if (zone.label === "Easy / Recovery") return; // handled after the loop
-    const keywords = ZONE_KEYWORDS[zone.label] || [];
-    const isMatch = keywords.some(kw => haystack.includes(kw));
-    if (!isMatch) return;
-    matchedSomethingSpecific = true;
-    const range = disciplineInfo.rangeFor(zone);
-    if (range) matches.push({ label: zone.label, range });
+  // First pass: does *any* segment in this session name a specific
+  // (non-Easy) zone? "easy" shows up constantly as a plain description
+  // of effort ("continuous easy running" on an Endurance/Long session)
+  // rather than the zone actually being named, so as soon as one segment
+  // names something more specific, Easy/Recovery is dropped everywhere
+  // in this session, not just within the segment it appeared in.
+  const sessionHasSpecificMatch = searchSegments.some(segment => {
+    const haystack = segment.toLowerCase();
+    return specificZones.some(zone => (ZONE_KEYWORDS[zone.label] || []).some(kw => haystack.includes(kw)));
   });
 
-  const easyZone = disciplineInfo.zones.find(z => z.label === "Easy / Recovery");
-  if (easyZone && !matchedSomethingSpecific) {
-    const keywords = ZONE_KEYWORDS["Easy / Recovery"] || [];
-    if (keywords.some(kw => haystack.includes(kw))) {
-      const range = disciplineInfo.rangeFor(easyZone);
-      if (range) matches.unshift({ label: easyZone.label, range });
+  const matches = [];
+  searchSegments.forEach(segment => {
+    const haystack = segment.toLowerCase();
+
+    let zone = specificZones.find(z => (ZONE_KEYWORDS[z.label] || []).some(kw => haystack.includes(kw)));
+    if (!zone && !sessionHasSpecificMatch && easyZone) {
+      const isEasyMatch = (ZONE_KEYWORDS["Easy / Recovery"] || []).some(kw => haystack.includes(kw));
+      if (isEasyMatch) zone = easyZone;
     }
-  }
+    if (!zone) return;
+
+    const range = disciplineInfo.rangeFor(zone);
+    if (!range) return;
+
+    matches.push({ label: segmentRoleLabel(segment) || zone.label, range: `${range}${disciplineInfo.unit}` });
+  });
 
   return matches;
 }
@@ -243,8 +281,8 @@ function matchedPaceZones(session) {
 function paceFieldHtml(session) {
   const matches = matchedPaceZones(session);
   if (matches.length === 0) return "";
-  const lines = matches.map(m => `${esc(m.label)}: ${esc(m.range)}`).join("<br>");
-  return `<div><span class="modal-field-label">Pace</span><span class="modal-field-value">${lines}</span></div>`;
+  const line = matches.map(m => `${esc(m.label)}: ${esc(m.range)}`).join(" | ");
+  return `<div><span class="modal-field-label">Pace</span><span class="modal-field-value">${line}</span></div>`;
 }
 
 function fieldHtml(label, value) {
