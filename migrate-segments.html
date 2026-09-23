@@ -91,6 +91,31 @@
     };
   }
 
+  // Splits on a single-character separator, but never inside an open
+  // "(...)" - e.g. splitting "4 x 100 m CSS / Threshold (30 sec rest;
+  // controlled); 300 m Easy CD" on ";" must not cut inside "(30 sec
+  // rest; controlled)", only at the ";" that comes after the closing
+  // paren. Tracks paren depth char by char rather than using a regex,
+  // since the ";" inside parens needs to be genuinely ignored rather
+  // than matched and discarded.
+  function splitOutsideParens(text, separator) {
+    const parts = [];
+    let current = "";
+    let depth = 0;
+    for (const ch of text) {
+      if (ch === "(") depth++;
+      else if (ch === ")") depth = Math.max(0, depth - 1);
+      if (ch === separator && depth === 0) {
+        parts.push(current);
+        current = "";
+      } else {
+        current += ch;
+      }
+    }
+    parts.push(current);
+    return parts.map(s => s.trim()).filter(Boolean);
+  }
+
   // Two distinct formats in the data, told apart by whether "|" is
   // present at all:
   //
@@ -116,17 +141,20 @@
     if (!text) return [];
 
     if (text.includes("|")) {
-      const categories = text.split("|").map(s => s.trim()).filter(Boolean);
+      const categories = splitOutsideParens(text, "|");
       return categories.flatMap(category => {
         const isWorkout = /^workout:/i.test(category);
         if (!isWorkout) return [toSegment(category, discipline)];
-        const steps = category.split("->").map(s => s.trim()).filter(Boolean);
+        // "->" is two characters, so splitOutsideParens (built for a
+        // single-char separator) can't be reused directly here - swap it
+        // for a placeholder character first, matching how it'd behave.
+        const steps = splitOutsideParens(category.split("->").join("\u0001"), "\u0001");
         return steps.map(step => toSegment(step, discipline));
       });
     }
 
     const primarySeparator = text.includes("+") ? "+" : ";";
-    const chunks = text.split(primarySeparator).map(s => s.trim()).filter(Boolean);
+    const chunks = splitOutsideParens(text, primarySeparator);
     return chunks.map(chunk => toSegment(chunk, discipline));
   }
 
