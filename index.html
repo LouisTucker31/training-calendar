@@ -20,6 +20,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://vumsggojkacntpzhprqh.supabase.co; base-uri 'self'; form-action 'self'">
 <title>2026–27 Training Event Calendar</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="liquid-glass-toolbar.css">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 
@@ -53,8 +54,33 @@
 
 <div id="calendar"></div>
 
+<!-- Liquid glass "today" toolbar: the outer two circles are decorative
+     only (no icon, no function - kept purely for the three-piece glass
+     look), the centre pill is the app's today button, wired up in
+     script.js. Hidden by default; script.js reveals it once there's a
+     workout/rest-day summary to show for today, same as the pill this
+     replaces. -->
+<div class="lg-toolbar" id="today-toolbar" role="presentation" hidden>
+  <div class="lg-toolbar__circle lg-surface" aria-hidden="true">
+    <span class="lg-surface__lens" aria-hidden="true"></span>
+    <span class="lg-surface__frost" aria-hidden="true"></span>
+  </div>
+
+  <button type="button" class="lg-toolbar__pill lg-surface" id="today-pill">
+    <span class="lg-surface__lens" aria-hidden="true"></span>
+    <span class="lg-surface__frost" aria-hidden="true"></span>
+    <span class="today-pill-label" id="today-pill-label"></span>
+  </button>
+
+  <div class="lg-toolbar__circle lg-surface" aria-hidden="true">
+    <span class="lg-surface__lens" aria-hidden="true"></span>
+    <span class="lg-surface__frost" aria-hidden="true"></span>
+  </div>
+</div>
+
 <script src="data.js"></script>
 <script src="supabase.js"></script>
+<script src="liquid-glass-toolbar.js"></script>
 <script src="script.js"></script>
 <script>
   if ("serviceWorker" in navigator) {

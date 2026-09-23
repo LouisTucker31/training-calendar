@@ -874,18 +874,18 @@ function scrollToCurrentMonth(withPulse) {
   }
 }
 
-const todayPill = document.createElement("button");
-todayPill.type = "button";
-todayPill.className = "today-pill";
-todayPill.hidden = true;
+// The pill's markup lives in index.html as the centre piece of the
+// liquid-glass toolbar (liquid-glass-toolbar.css/js) - the two outer
+// circles in that toolbar are decorative only, kept for the glass
+// three-piece look but with no icon or click behaviour. todayPill here
+// refers to the whole toolbar wrapper so existing hide/show calls
+// (openModal, openEventList, etc.) hide the full toolbar, not just the
+// pill button inside it.
+const todayPill = document.getElementById("today-toolbar");
+const todayPillButton = document.getElementById("today-pill");
+const todayPillLabel = document.getElementById("today-pill-label");
 
-const todayPillLabel = document.createElement("span");
-todayPillLabel.className = "today-pill-label";
-todayPill.appendChild(todayPillLabel);
-
-document.body.appendChild(todayPill);
-
-todayPill.addEventListener("click", () => {
+todayPillButton.addEventListener("click", () => {
   scrollToCurrentMonth(true);
   // Waits for the smooth scroll to settle before opening today's popup,
   // so the two happen in sequence rather than the modal appearing over a

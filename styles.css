@@ -789,61 +789,11 @@ body {
   color: var(--ink-soft);
 }
 
-/* Floating "today" pill: persistent, fixed to the bottom of the viewport
-   (thumb-reach zone on mobile), above the safe area. Fixed width/height
-   regardless of its text content, so it never resizes as today's content
-   changes day to day - sized generously enough for the longest label this
-   app produces (a brick-day name or "Session - duration" pair), with
-   ellipsis as a safety net for anything longer still. Liquid-glass look:
-   more transparent and more blurred than a typical frosted panel, with an
-   inner highlight along the top edge for that glass-refraction feel,
-   built from the app's own light palette rather than a generic dark
-   glass effect. */
-.today-pill {
-  position: fixed;
-  left: 50%;
-  bottom: calc(36px + env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  width: min(310px, calc(100vw - 32px));
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 24px;
-  border: none;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 15.5px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  z-index: 900;
-
-  /* Plain fallback (no blur) for browsers without backdrop-filter, so
-     text stays readable even if the glass effect doesn't render. */
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(var(--line-strong-rgb), 0.5);
-  box-shadow: 0 10px 30px rgba(var(--ink-rgb), 0.12);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .today-pill {
-    background: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow:
-      0 10px 30px rgba(var(--ink-rgb), 0.14),
-      0 1px 1px rgba(var(--ink-rgb), 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 0 0 1px rgba(var(--line-strong-rgb), 0.18);
-  }
-}
-
-.today-pill[hidden] {
-  display: none;
-}
-
+/* The floating "today" button's own styling (glass surface, sizing,
+   position) now lives in liquid-glass-toolbar.css as the centre pill of
+   the #today-toolbar three-piece toolbar (see index.html). Only the
+   label's text-overflow behaviour is app-specific, since the label's
+   content (today's workout/rest-day summary) can vary in length. */
 .today-pill-label {
   overflow: hidden;
   text-overflow: ellipsis;

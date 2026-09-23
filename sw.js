@@ -1,13 +1,15 @@
 // Bump this whenever any cached file changes, so old clients pick up the
 // new version instead of serving stale cached copies indefinitely.
-const CACHE_NAME = "training-calendar-v27";
+const CACHE_NAME = "training-calendar-v28";
 
 const CACHE_FILES = [
   "./",
   "./index.html",
   "./styles.css",
+  "./liquid-glass-toolbar.css",
   "./data.js",
   "./supabase.js",
+  "./liquid-glass-toolbar.js",
   "./script.js",
   "./manifest.json",
   "./icons/icon-192.png",
